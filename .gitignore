@@ -13,5 +13,12 @@ spectre-env/
 # Environment variables
 .env
 
-# Models (too large for GitHub)
+
+# New additions
+models/xgboost_scorer.pkl
+models/spacy_classifier/
 models/drebin_graphs/
+*.pkl
+*.gpickle
+tools/__pycache__/
+scripts/__pycache__/

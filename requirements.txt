@@ -1,0 +1,14 @@
+fastapi>=0.100.0
+uvicorn>=0.20.0
+androguard>=3.3.5
+networkx>=3.0
+mitmproxy>=11.0.0
+spacy>=3.0.0
+nltk>=3.8
+langdetect>=1.0.9
+xgboost>=2.0.0
+anthropic>=0.20.0
+cryptography>=44.0.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+aiofiles>=23.0.0
