@@ -12,7 +12,7 @@ spectre-env/
 
 # Environment variables
 .env
-
+.env.example
 
 # New additions
 models/xgboost_scorer.pkl
