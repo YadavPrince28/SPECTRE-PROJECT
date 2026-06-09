@@ -3,6 +3,7 @@ data/malware/
 data/benign/
 data/captures/
 data/uploads/
+data/output/
 
 # Python
 __pycache__/
