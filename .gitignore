@@ -1,0 +1,16 @@
+# Malware samples — never commit
+data/malware/
+data/benign/
+data/captures/
+data/uploads/
+
+# Python
+__pycache__/
+*.pyc
+spectre-env/
+
+# Environment variables
+.env
+
+# Models (too large for GitHub)
+models/drebin_graphs/
