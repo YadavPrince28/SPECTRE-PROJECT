@@ -19,7 +19,18 @@ import {
 import { RiskGauge } from "./risk-gauge"
 import { PhoneFrame } from "./phone-frame"
 
-export function AnalysisTerminal() {
+export function AnalysisTerminal({result}: {result: any}) {
+  const riskScore = result?.final_score?.score ?? 94
+  const verdict = result?.final_score?.verdict ?? "CRITICAL"
+  const packageName = result?.static?.package ?? "uniontrust_secure_v3.2.apk"
+  const permissionScore = result?.static?.permission_score ?? 87
+  const chainScore = result?.static?.chain_score ?? 72
+
+  const dangerousPermissions = result?.static?.permission_data?.dangerous_permissions ?? null
+
+  const triggeredCombos = result?.static?.permission_data?.triggered_combos ?? []
+  const exfiltrationEvents = result?.dynamic?.exfiltration_events ?? []
+  
   return (
     <div className="flex flex-col gap-6">
       <Header />

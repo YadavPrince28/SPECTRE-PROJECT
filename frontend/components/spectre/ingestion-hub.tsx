@@ -24,19 +24,73 @@ const TONE_STYLES: Record<PipelineStep["tone"], { color: string; icon: typeof Cp
   genai: { color: "text-cyan-400", icon: Brain },
 }
 
-export function IngestionHub({ onComplete }: { onComplete: () => void }) {
+export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [status, setStatus] = useState<"idle" | "running" | "done">("idle")
   const [progress, setProgress] = useState(0)
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function startPipeline(name?: string) {
+  function startPipeline(file?: File) {
     if (status === "running") return
+    if(file){
+      setSelectedFile(file)
+      setFileName(file.name)
+    }else{
+      setSelectedFile(null)
+      setFileName("uniontrust_secure_v3.2.apk")
+    }
+
     setStatus("running")
     setProgress(0)
     setVisibleSteps(0)
-    if (name) setFileName(name)
+  }
+
+  async function uploadToBackend(file: File){
+    try{
+      const formdata = new FormData()
+      formdata.append("file", file)
+      
+      const uploadResponse = await fetch("http://localhost:8000/analyze", {method: "POST", body: formdata, })
+      if(!uploadResponse.ok){
+        throw new Error(`Upload failed with status: ${uploadResponse.status}`)
+      }
+      const uploadData = await uploadResponse.json()
+      const jobId = uploadData.job_id
+
+      const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
+      ws.onopen = () => {
+        console.log(`[SPECTRE] WebSocket connected. Job: ${jobId}`)
+      }
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        console.log(`[SPECTRE] Status update: ${data.status}`)
+
+        if (data.status === "complete"){
+          ws.close()
+          setTimeout(() => onComplete(data.result), 500)
+        }
+
+        if(data.status === "error"){
+          console.error(`[SPECTRE] Pipeline error: ${data.error}`)
+          ws.close()
+          setTimeout(() => onComplete(null), 500)
+        }
+      }
+
+      ws.onerror = () => {
+        console.error("[SPECTRE] WebSocket connection failed")
+        setTimeout(() => onComplete(null), 500)
+      }
+      ws.onclose = () => {
+        console.log (`[SPECTRE] WebSocket closed for job: ${jobId}`)
+      }
+
+    } catch (error){
+      console.error("[SPECTRE] Upload error:", error)
+      setTimeout(() => onComplete(null), 500)
+    }
   }
 
   const [fileName, setFileName] = useState("uniontrust_secure_v3.2.apk")
@@ -57,7 +111,11 @@ export function IngestionHub({ onComplete }: { onComplete: () => void }) {
       if (pct >= 100) {
         clearInterval(interval)
         setStatus("done")
-        setTimeout(onComplete, 900)
+        if(selectedFile){
+          uploadToBackend(selectedFile)
+        }else{
+          setTimeout(()=> onComplete(null), 900)
+        }
       }
     }, 60)
     return () => {
@@ -80,8 +138,8 @@ export function IngestionHub({ onComplete }: { onComplete: () => void }) {
         onDrop={(e) => {
           e.preventDefault()
           setDragging(false)
-          const f = e.dataTransfer.files?.[0]
-          startPipeline(f?.name)
+          const file = e.dataTransfer.files?.[0]
+          if (file)startPipeline(file)
         }}
         className={cn(
           "glass-card relative flex flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-16 text-center transition-all",
@@ -133,7 +191,11 @@ export function IngestionHub({ onComplete }: { onComplete: () => void }) {
             type="file"
             accept=".apk"
             className="hidden"
-            onChange={(e) => startPipeline(e.target.files?.[0]?.name)}
+           onChange={(e) =>{
+            const file = e.target.files?.[0]
+            if(file) startPipeline(file)
+           } 
+           }
           />
         </div>
 

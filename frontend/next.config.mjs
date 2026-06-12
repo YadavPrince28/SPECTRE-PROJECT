@@ -6,6 +6,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+    turbo: {
+      root: './frontend'
+    },
 }
 
 export default nextConfig

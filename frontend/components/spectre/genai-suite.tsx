@@ -20,7 +20,10 @@ const TABS: { id: Tab; label: string; icon: typeof FileText }[] = [
   { id: "killchain", label: "7-Stage Fraud Kill Chain", icon: Workflow },
 ]
 
-export function GenAISuite() {
+export function GenAISuite({result}: {result: any}) {
+  const investigatorBrief = result?.genai?.investigator_brief ?? null
+  const killChainData = result?.genai?.kill_chain ?? null
+  const codeExplanation = result?.genai?.code_explanation ?? null
   const [tab, setTab] = useState<Tab>("brief")
 
   return (
