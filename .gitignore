@@ -1,9 +1,5 @@
 # Malware samples — never commit
-data/malware/
-data/benign/
-data/captures/
-data/uploads/
-data/output/
+data/
 
 # Python
 __pycache__/
