@@ -22,22 +22,45 @@ import { PhoneFrame } from "./phone-frame"
 export function AnalysisTerminal({result}: {result: any}) {
   const riskScore = result?.final_score?.score ?? 94
   const verdict = result?.final_score?.verdict ?? "CRITICAL"
-  const packageName = result?.static?.package ?? "uniontrust_secure_v3.2.apk"
-  const permissionScore = result?.static?.permission_score ?? 87
-  const chainScore = result?.static?.chain_score ?? 72
 
-  const dangerousPermissions = result?.static?.permission_data?.dangerous_permissions ?? null
+  const packageName =
+    result?.static?.package_name ??
+    result?.static?.package ??
+    "Unknown APK"
 
-  const triggeredCombos = result?.static?.permission_data?.triggered_combos ?? []
-  const exfiltrationEvents = result?.dynamic?.exfiltration_events ?? []
+  const permissionScore =
+    result?.static?.permission_score ?? 0
+
+  const chainScore =
+    result?.static?.chain_score ?? 0
+
+  const dangerousPermissions =
+    result?.static?.permission_data?.dangerous_permissions ??
+    result?.static?.dangerous_permissions ??
+    []
+
+  const triggeredCombos =
+    result?.static?.permission_data?.triggered_combos ??
+    result?.static?.combo_alerts ??
+    []
+
+  const exfiltrationEvents =
+    result?.dynamic?.exfiltration_events ?? []
   
   return (
     <div className="flex flex-col gap-6">
-      <Header />
-      <QuickMetrics />
+      <Header packageName={packageName} />
+       <QuickMetrics
+        result={result}
+        riskScore={riskScore}
+        verdict={verdict}
+      />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <LeftColumn />
+        <LeftColumn 
+        result={result}
+        riskScore={riskScore}
+        />
         <RightColumn />
       </div>
 
@@ -47,7 +70,11 @@ export function AnalysisTerminal({result}: {result: any}) {
   )
 }
 
-function Header() {
+function Header({
+  packageName,
+}: {
+  packageName: string
+}) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
@@ -58,54 +85,150 @@ function Header() {
       </div>
       <p className="text-sm text-slate-500">
         Multi-dimensional structural fingerprinting and live runtime behavioral telemetry for{" "}
-        <span className="font-mono text-slate-400">uniontrust_secure_v3.2.apk</span>.
+        <span className="font-mono text-slate-400">{packageName}</span>.
       </p>
     </div>
   )
 }
 
-function QuickMetrics() {
+function QuickMetrics({
+  result,
+  riskScore,
+  verdict,
+}: {
+  result: any
+  riskScore: number
+  verdict: string
+}) {
+  const behavioral = result?.behavioral ?? {}
+
+  const closestFamily =
+    behavioral?.closest_family ??
+    "No behavioral match"
+
+  const behavioralScore =
+    behavioral?.behavioral_score ?? 0
+
+  const classScore =
+    behavioral?.class_idf_score ?? 0
+
+  const packageScore =
+    behavioral?.package_markov_score ?? 0
+
+  const margin =
+    behavioral?.top1_margin_percent ?? 0
+
+  const exfiltrationEvents =
+    result?.dynamic?.exfiltration_events ?? []
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+      {/* FINAL RISK */}
       <div className="glass-card animate-breathe-crimson relative overflow-hidden rounded-2xl border border-rose-500/40 p-5">
+
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Composite Risk Vector
         </p>
+
         <div className="mt-2 flex items-end gap-2">
-          <span className="font-mono text-4xl font-bold text-rose-400">94</span>
-          <span className="mb-1 font-mono text-sm text-slate-500">/100</span>
+          <span className="font-mono text-4xl font-bold text-rose-400">
+            {Math.round(riskScore)}
+          </span>
+
+          <span className="mb-1 font-mono text-sm text-slate-500">
+            /100
+          </span>
         </div>
+
         <span className="mt-3 inline-flex items-center gap-1 rounded-md bg-rose-500/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-rose-400">
-          <CircleAlert className="size-3" /> CRITICAL COMPROMISE
+          <CircleAlert className="size-3" />
+          {verdict}
         </span>
       </div>
 
+
+      {/* BEHAVIORAL DNA */}
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
+
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Behavioral Graph Match
         </p>
+
         <div className="mt-2 flex items-center gap-3">
           <GitBranch className="size-7 text-cyan-400" />
-          <span className="text-lg font-semibold text-slate-100">DroidKungFu Family</span>
+
+          <span className="text-lg font-semibold text-slate-100">
+            {closestFamily}
+          </span>
         </div>
-        <p className="mt-3 font-mono text-xs text-slate-500">15% Graph Edit Distance</p>
+
+        <p className="mt-3 font-mono text-xs text-cyan-400">
+          Behavioral Similarity: {behavioralScore.toFixed(2)}%
+        </p>
+
+        <p className="mt-1 font-mono text-[10px] text-slate-500">
+          Class-IDF: {(classScore * 100).toFixed(2)}%
+          {" · "}
+          Package Markov: {(packageScore * 100).toFixed(2)}%
+        </p>
+
+        <p className="mt-1 font-mono text-[10px] text-slate-500">
+          Top-1 margin: {margin.toFixed(2)}%
+        </p>
       </div>
 
+
+      {/* NETWORK */}
       <div className="glass-card rounded-2xl border border-amber-500/40 p-5">
+
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Network Exfiltration Status
         </p>
-        <div className="mt-2 flex items-center gap-2">
-          <AlertTriangle className="size-6 text-amber-400" />
-          <span className="text-base font-bold text-amber-400">LIVE INTERCEPT DISCOVERED</span>
-        </div>
-        <p className="mt-3 font-mono text-xs text-slate-500">C2 beacon active · 3 endpoints</p>
+
+        {exfiltrationEvents.length > 0 ? (
+          <>
+            <div className="mt-2 flex items-center gap-2">
+              <AlertTriangle className="size-6 text-amber-400" />
+
+              <span className="text-base font-bold text-amber-400">
+                EXFILTRATION DETECTED
+              </span>
+            </div>
+
+            <p className="mt-3 font-mono text-xs text-slate-500">
+              {exfiltrationEvents.length} event
+              {exfiltrationEvents.length !== 1 ? "s" : ""} captured
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="mt-2 flex items-center gap-2">
+              <Network className="size-6 text-emerald-400" />
+
+              <span className="text-base font-bold text-emerald-400">
+                NO EXFILTRATION
+              </span>
+            </div>
+
+            <p className="mt-3 font-mono text-xs text-slate-500">
+              No suspicious POST exfiltration events captured
+            </p>
+          </>
+        )}
       </div>
+
     </div>
   )
 }
 
-function LeftColumn() {
+function LeftColumn({
+  result,
+  riskScore,
+}: {
+  result: any
+  riskScore: number
+}) {
   return (
     <div className="flex flex-col gap-6">
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
@@ -113,7 +236,7 @@ function LeftColumn() {
           <Activity className="size-4 text-cyan-400" /> Multi-Dimensional Risk Gauge
         </h3>
         <div className="flex items-center justify-center py-2">
-          <RiskGauge value={94} />
+          <RiskGauge value={Math.round(riskScore)} />
         </div>
         <div className="mt-2 grid grid-cols-4 gap-1 text-center font-mono text-[9px]">
           <span className="text-emerald-400">LOW 0-30</span>
