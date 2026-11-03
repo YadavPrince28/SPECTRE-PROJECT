@@ -1,0 +1,383 @@
+{
+  "source_rule_directory": "C:\\Users\\princ\\.quark-engine\\quark-rules\\rules",
+  "source_rule_count": 278,
+  "selected_rule_count": 30,
+  "purpose": "SPECTRE Phase-1 Quark candidate subset",
+  "not_for_final_scoring": true,
+  "rules": [
+    {
+      "rule": "00021.json",
+      "crime": "Load additional DEX files dynamically",
+      "labels": [
+        "reflection"
+      ],
+      "selection_score": 11,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "contextual_reflection"
+      ]
+    },
+    {
+      "rule": "00054.json",
+      "crime": "Install other APKs from file",
+      "labels": [
+        "reflection"
+      ],
+      "selection_score": 7,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "contextual_reflection"
+      ]
+    },
+    {
+      "rule": "00093.json",
+      "crime": "Get the content of SMS and forward it to others via SMS",
+      "labels": [
+        "collection",
+        "sms",
+        "command"
+      ],
+      "selection_score": 10,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "high_signal_labels=sms"
+      ]
+    },
+    {
+      "rule": "00149.json",
+      "crime": "Unpack an asset, possibly decrypt it and load it as DEX",
+      "labels": [
+        "packer"
+      ],
+      "selection_score": 10,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "high_signal_labels=packer"
+      ]
+    },
+    {
+      "rule": "00150.json",
+      "crime": "Send IMSI over Internet",
+      "labels": [
+        "phone"
+      ],
+      "selection_score": 8,
+      "selection_reasons": [
+        "high_signal_phrases=2"
+      ]
+    },
+    {
+      "rule": "00151.json",
+      "crime": "Send phone number over Internet",
+      "labels": [
+        "phone",
+        "privacy"
+      ],
+      "selection_score": 10,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "high_signal_labels=privacy"
+      ]
+    },
+    {
+      "rule": "00157.json",
+      "crime": "Instantiate new object using reflection, possibly used for dexClassLoader ",
+      "labels": [
+        "reflection",
+        "dexClassLoader"
+      ],
+      "selection_score": 5,
+      "selection_reasons": [
+        "high_signal_labels=dexClassLoader",
+        "contextual_reflection"
+      ]
+    },
+    {
+      "rule": "00159.json",
+      "crime": "Use accessibility service to perform action getting node info by text",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00160.json",
+      "crime": "Use accessibility service to perform action getting node info by View Id",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00161.json",
+      "crime": "Perfom accessibility service action on accessibility node info",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00164.json",
+      "crime": "Get SMS address and send it through http",
+      "labels": [
+        "sms",
+        "http"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=sms"
+      ]
+    },
+    {
+      "rule": "00165.json",
+      "crime": "Get SMS message body and send it through http",
+      "labels": [
+        "sms",
+        "http"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=sms"
+      ]
+    },
+    {
+      "rule": "00166.json",
+      "crime": "Get SMS message body and retrieve a string from it (possibly PIN / mTAN)",
+      "labels": [
+        "sms",
+        "pin"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=sms"
+      ]
+    },
+    {
+      "rule": "00167.json",
+      "crime": "Use accessibility service to perform action getting root in active window",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00168.json",
+      "crime": "Use accessibility service to perform global action getting node info by text",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00169.json",
+      "crime": "Use accessibility service to perform global action getting node info by View Id",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00173.json",
+      "crime": "Get bounds in screen of an AccessibilityNodeInfo and perform action",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00205.json",
+      "crime": "Simulate a touch gesture on the device screen",
+      "labels": [
+        "accessibility service",
+        "control"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00206.json",
+      "crime": "Check if the text of the view contains the given string",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00207.json",
+      "crime": "Check if the resource name of the view contains the given string",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00240.json",
+      "crime": "Simulate user gestures",
+      "labels": [
+        "accessibility service",
+        "control"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00241.json",
+      "crime": "Get the description of a UI element",
+      "labels": [
+        "accessibility service"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00245.json",
+      "crime": "Install other APKs from file",
+      "labels": [
+        "reflection"
+      ],
+      "selection_score": 7,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "contextual_reflection"
+      ]
+    },
+    {
+      "rule": "00248.json",
+      "crime": "Establish a connection to an NFC card",
+      "labels": [
+        "nfc"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=nfc"
+      ]
+    },
+    {
+      "rule": "00249.json",
+      "crime": "Read the payment data stored in an NFC card",
+      "labels": [
+        "collection",
+        "nfc"
+      ],
+      "selection_score": 10,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "high_signal_labels=nfc"
+      ]
+    },
+    {
+      "rule": "00255.json",
+      "crime": "Save gestures into a list",
+      "labels": [
+        "accessibility service",
+        "control"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00261.json",
+      "crime": "Dispatch gesture from a list",
+      "labels": [
+        "accessibility service",
+        "control"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00266.json",
+      "crime": "Read clipboard",
+      "labels": [
+        "keylogging"
+      ],
+      "selection_score": 10,
+      "selection_reasons": [
+        "high_signal_phrases=2",
+        "high_signal_labels=keylogging"
+      ]
+    },
+    {
+      "rule": "00267.json",
+      "crime": "Dispatch gesture",
+      "labels": [
+        "accessibility service",
+        "control"
+      ],
+      "selection_score": 6,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=accessibility service"
+      ]
+    },
+    {
+      "rule": "00277.json",
+      "crime": "Configure custom timeout for IsoDep card communication (NFC reader-mode relay preparation)",
+      "labels": [
+        "nfc",
+        "relay",
+        "collection"
+      ],
+      "selection_score": 8,
+      "selection_reasons": [
+        "high_signal_phrases=1",
+        "high_signal_labels=nfc,relay"
+      ]
+    }
+  ]
+}

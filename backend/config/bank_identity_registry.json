@@ -1,0 +1,204 @@
+{
+  "com.infrasoft.uboi": {
+    "app_name": "VYOM 2.0",
+    "cert_sha256": [
+      "cbc0d5cf005cebb0af992ce5be4615d3f72a6e68a655dc20130dc4783e6f04a6"
+    ],
+    "source_apks": [
+      "2178d875d9d5cb0bbd290b2d5d5ed71c0108c972b6180820e8fe2b4b52bd64a9.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.sbi.SBIFreedomPlus": {
+    "app_name": "Yono Lite SBI",
+    "cert_sha256": [
+      "7a86d216271581d908e9362bc32d50e0a0c487831206c3b8e017db33494745ce",
+      "7c579e67bbf0ebb5ead2e2c469b4967dfe00fb36b1fe75910856bc7ccc4e8b10",
+      "a6e286fb2c53c6428312bda556f527a434a26f68d059c11a95c8a9760a4071c7"
+    ],
+    "source_apks": [
+      "27c2841bbcd387a8105eb8d8eeec6fdc7a9cbcf18674abb35b1f6ae7957ade6d.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.sbi.lotusintouch": {
+    "app_name": "YONO SBI",
+    "cert_sha256": [
+      "435776891f2ca214e3ed167c42f60e47d96fa49e0c9ea76dbd9936fa54f15f42"
+    ],
+    "source_apks": [
+      "2b8a8a9fad9ae71f30a35ebfd1b5a006ce6e49e2cc1bbc482f4a955fabd9fb9f.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.lcode.ucombook": {
+    "app_name": "UCO mPassbook",
+    "cert_sha256": [
+      "6661a4656f9754428d789f94966be0844d0a761a0132b3fc3b8a30bee4df7165"
+    ],
+    "source_apks": [
+      "3fdd6c2480b7135d8fa3cb6f4b7665c3a0d8b9cf606dbd55b4991f7bb94bc5e7.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.snapwork.hdfc": {
+    "app_name": "HDFC Bank",
+    "cert_sha256": [
+      "82b9061e55cc897c167538138dbe69f9b2bfd92d1abd42cecc166aa42b321fd9"
+    ],
+    "source_apks": [
+      "47d8b443197698c8e07dfac2df530a8cc1980157ffc16b29c8fa69d65be655c1.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.Version1": {
+    "app_name": "PNB ONE",
+    "cert_sha256": [
+      "cb31e6fd5e2a62d502e6b9be9c6f41d6314e5992a13a4bf8509ca0ffd0a046e0"
+    ],
+    "source_apks": [
+      "48c6c919f919b86bace280fc899c8700d2b20a283e86072ec2be13622f9c98f9.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.fss.indus": {
+    "app_name": "IndusMobile",
+    "cert_sha256": [
+      "d5e2caa60f6b5a6356d4b5b62b3865d2f4f5ae5e763312711580ab341caebfc6"
+    ],
+    "source_apks": [
+      "50e24bad2860efda1bc58f1b92113641c30090c2f57ed873cb83e3bd5534d406.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.bankofbaroda.mconnect": {
+    "app_name": "bob World",
+    "cert_sha256": [
+      "86734f0ce04de5bce31b1978b5dac7f938feecdfe01908f5a1ae3cdcceb43003"
+    ],
+    "source_apks": [
+      "51cc324b3c7756a93fa4cd44fb301bb4576d0845d696f630d03df8f72153514a.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.msf.kbank.mobile": {
+    "app_name": "Kotak Bank",
+    "cert_sha256": [
+      "d9ea830932457cf66cb95e4e8d17db75fceb4fe1ae5d2fa69d3b21902321ac50"
+    ],
+    "source_apks": [
+      "614fdf72e33c1f1cec38d9903690e3ac8292cb6462d106492dc1b8b1a44bfb5e.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.canarabank.mobility": {
+    "app_name": "Canara ai1",
+    "cert_sha256": [
+      "cfe8e60dacd95c0ff2886231ef485d039aa3fee3483d33154631aba27327015a"
+    ],
+    "source_apks": [
+      "699e801bcaab35dd7914955363238251ddcf91cf765810e35c881b145614e436.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.ausmallfinancebank.amb": {
+    "app_name": "AU 0101",
+    "cert_sha256": [
+      "f0d2e1de63071074e65d9a7023a7cfb335a9ffa7778ac0d13a1ce401e89027fa"
+    ],
+    "source_apks": [
+      "6b0d6b94c33786f05c6b64220729272a238d572bbec5724efe5922f5c43c9bf8.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.snapwork.IDBI": {
+    "app_name": "IDBI Bank",
+    "cert_sha256": [
+      "83159a7514696a05b68cad09b7e9ef109452a76ddf98555129633ee758665897"
+    ],
+    "source_apks": [
+      "78c432f06bf81497672e3ff7216748a93e5f16fe15b6ebddecd5ecf043968593.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.boi.ua.android": {
+    "app_name": "BOI Mobile",
+    "cert_sha256": [
+      "018672474e1b89cfcef70ffd3f96ef40c2502ec7564213a072b62d7aabb962f9"
+    ],
+    "source_apks": [
+      "8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.csam.icici.bank.imobile": {
+    "app_name": "iMobile",
+    "cert_sha256": [
+      "c204492d7445d35231b2cf32b4f0693bb14cd648bf973ac912a2c13d230d4efc"
+    ],
+    "source_apks": [
+      "95f493c900733482b2a53b9a6e04743b3a0d4e9527efe4109e72ba10ed28e620.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.axis.mobile": {
+    "app_name": "Axis Mobile",
+    "cert_sha256": [
+      "ea40b45b42db0453b93390f21f45a442ceac10bf55d7bc124cdc3b045b7a5cfe"
+    ],
+    "source_apks": [
+      "a985df31b5fb7a93a543a28ca265bbe2bce5d1cccc697bb84268ddf6bddc7811.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.iexceed.ib.digitalbankingprod": {
+    "app_name": "IndSMART",
+    "cert_sha256": [
+      "ed0ace4164b34f002e30fc6da5e0c554d1609d78d66a1c0bf201385091b4149a"
+    ],
+    "source_apks": [
+      "ab82f4f259ab2087f267f7582580316ab9f2210cc489e4d00756c0e8bed890c4.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.fedmobile": {
+    "app_name": "FedMobile",
+    "cert_sha256": [
+      "86a36d957be241aeed01c87b2280ecce09b9d826bda310447866dd2536f9e60c"
+    ],
+    "source_apks": [
+      "b5ec2a58741c096650d4351987c36c4df26e0d5f32d7a93b14ab12dc2b9e984d.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.infrasofttech.CentralBank": {
+    "app_name": "Cent Mobile",
+    "cert_sha256": [
+      "6df041f35eb58f4dc8c25d53de0cdb262b87793f60e215c9151197d0474d2289"
+    ],
+    "source_apks": [
+      "bb8c05f2d441519ad70c04e76457ac26b8057dd5b18290f934a950b85702bd04.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.bandhan.mBandhan": {
+    "app_name": "mBandhan",
+    "cert_sha256": [
+      "1cbed4340b882c4dd0292481f4c8b8bae532b3411761eed5124215e5a40086d0"
+    ],
+    "source_apks": [
+      "c7e2403c14768fb7c74afb9b28a7cb36e19a947f45858fa474e30286f6c34a25.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  },
+  "com.idfcfirstbank.optimus": {
+    "app_name": "IDFC FIRST Bank",
+    "cert_sha256": [
+      "59d113ad642acad5c24e321e4c05fb1356cd7568c91cf69100dc0fdefc40467a"
+    ],
+    "source_apks": [
+      "d210fed880af66090c4b4d055a3d43d0b2e03c75234b3a2e606c690d04386bb1.apk"
+    ],
+    "notes": "Populate only from independently verified official bank APKs. Multiple fingerprints may be valid across versions/signing rotations."
+  }
+}

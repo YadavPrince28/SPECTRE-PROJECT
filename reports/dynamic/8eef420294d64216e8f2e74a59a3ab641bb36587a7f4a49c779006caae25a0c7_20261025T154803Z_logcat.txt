@@ -1,0 +1,1121 @@
+--------- beginning of main
+10-25 21:18:01.210 12414 12417 I AidlLazyServiceRegistrar: Process has 0 (of 1 available) client(s) in use after notification artd has clients: 0
+10-25 21:18:01.210 12414 12417 I AidlLazyServiceRegistrar: Trying to shut down the service. No clients in use for any service in process.
+10-25 21:18:01.217 12414 12417 I AidlLazyServiceRegistrar: Unregistered all clients and exiting
+10-25 21:18:01.236   551  4161 D EGL_emulation: app_time_stats: avg=197.83ms min=0.93ms max=1482.09ms count=8
+10-25 21:18:01.352 15507 15507 I abb     : StartCommandInProcess(73657474696e67730067657400676c6f settings.get.glo [truncated])
+10-25 21:18:01.391 15507 15507 I abb     : StartCommandInProcess(7061636b61676500696e7374616c6c00 package.install. [truncated])
+10-25 21:18:01.377   551   551 W binder:551_3: type=1400 audit(0.0:116): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:01.377   551   551 W binder:551_3: type=1400 audit(0.0:117): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:01.377   551   551 W binder:551_3: type=1400 audit(0.0:118): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+--------- beginning of system
+10-25 21:18:02.474   551   678 D ActivityManager: freezing 11344 com.google.android.gms.ui
+10-25 21:18:03.237   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:04.020   551   678 D ActivityManager: freezing 11225 com.google.android.permissioncontroller
+10-25 21:18:04.661   551   551 W binder:551_3: type=1400 audit(0.0:119): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:05.068   551   637 I PackageManager: Integrity check passed for file:///data/app/vmdl1042043219.tmp
+10-25 21:18:05.092   551   612 I ActivityManager: Force stopping com.boi.ua.android appid=10191 user=-1: installPackageLI
+10-25 21:18:05.093   551   612 E libprocessgroup: No such cgroup attribute: /sys/fs/cgroup/uid_4294877487/cgroup.freeze
+10-25 21:18:05.093   551   612 W libprocessgroup: Failed to apply Frozen process profile: No such file or directory
+10-25 21:18:05.094   551   612 E libprocessgroup: No such cgroup attribute: /sys/fs/cgroup/uid_4294877487/cgroup.freeze
+10-25 21:18:05.094   551   612 W libprocessgroup: Failed to apply Unfrozen process profile: No such file or directory
+10-25 21:18:05.098   551   637 I PackageManager: Update package com.boi.ua.android code path from /data/app/~~ZiaebCp6__5Usuect76Jog==/com.boi.ua.android--lvBYGZe9PjEDQQMz7uxaw== to /data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==; Retain data and using new
+10-25 21:18:05.143   551   637 I PermissionManager: Permission ownership changed. Updating all permissions.
+10-25 21:18:05.322   551   600 W Looper  : Slow dispatch took 174ms android.fg h=android.os.Handler c=<recycled PooledLambda@9a71555> m=0
+10-25 21:18:05.662   551   678 D ActivityManager: freezing 15387 com.google.android.deskclock
+10-25 21:18:05.936 15520 15520 I artd    : Starting artd
+10-25 21:18:05.939 15520 15520 I AidlLazyServiceRegistrar: Registering service artd
+10-25 21:18:05.952 15520 15525 I AidlLazyServiceRegistrar: Process has 1 (of 1 available) client(s) in use after notification artd has clients: 1
+10-25 21:18:05.972 15520 15526 I artd    : Merge skipped because there are no existing profiles
+10-25 21:18:06.084 15520 15526 W ziparchive: Unable to open '/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.dm': No such file or directory
+10-25 21:18:06.084 15520 15526 W ziparchive: Unable to open '/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.dm': No such file or directory
+10-25 21:18:06.207   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:06.219 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:06.219 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:06.219 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:06.219 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:06.224 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.224 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.230 15520 15526 I artd    : Running dex2oat: /apex/com.android.art/bin/art_exec --drop-capabilities --set-task-profile=Dex2OatBootComplete --set-priority=background --keep-fds=6:8:7:10:11 -- /apex/com.android.art/bin/dex2oat64 --zip-fd=6 --zip-location=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.apk --oat-fd=8 --oat-location=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/oat/x86_64/base.odex --output-vdex-fd=7 --swap-fd=10 --class-loader-context-fds=11 --class-loader-context=PCL[]{PCL[/system/framework/org.apache.http.legacy.jar]} --classpath-dir=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA== --instruction-set=x86_64 --instruction-set-features=default --instruction-set-variant=x86_64 --compiler-filter=verify --compilation-reason=install --compact-dex-level=none --max-image-block-size=524288 --resolve-startup-const-strings=true --generate-mini-debug-info --runtime-arg -Xtarget-sdk-version:33 --runtime-arg -Xhidden-api-policy:enabled --runtime-arg -Xms64m --runtime-arg -Xmx512m --comments=app-version-name:1.6.5,app-version-code:35,art-version:340818082
+10-25 21:18:06.230 15520 15526 I artd    : Opened FDs: 6:/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.apk 8:/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/oat/x86_64/base.odex.otRhYF.tmp 7:/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/oat/x86_64/base.vdex.kRVP1J.tmp 10:/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/oat/x86_64/base.odex.swap.P0P2GE.tmp 11:/system/framework/org.apache.http.legacy.jar 
+10-25 21:18:06.238 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:06.238 15520 15520 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:06.239 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:06.239 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:06.240 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.240 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.242 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.242 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.243 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:06.243 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:06.243 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:06.243 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:06.244 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.244 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:06.245 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:06.245 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:06.246 15520 15528 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:06.541 15527 15527 W dex2oat64: Unexpected CPU variant for x86: x86_64.
+10-25 21:18:06.541 15527 15527 W dex2oat64: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-25 21:18:06.552 15527 15527 W dex2oat64: Mismatch between dex2oat instruction set features to use (ISA: X86_64 Feature string: -ssse3,-sse4.1,-sse4.2,-avx,-avx2,-popcnt) and those from CPP defines (ISA: X86_64 Feature string: ssse3,sse4.1,sse4.2,-avx,-avx2,popcnt) for the command line:
+10-25 21:18:06.552 15527 15527 W dex2oat64: /apex/com.android.art/bin/dex2oat64 --zip-fd=6 --zip-location=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.apk --oat-fd=8 --oat-location=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/oat/x86_64/base.odex --output-vdex-fd=7 --swap-fd=10 --class-loader-context-fds=11 --class-loader-context=PCL[]{PCL[/system/framework/org.apache.http.legacy.jar]} --classpath-dir=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA== --instruction-set=x86_64 --instruction-set-features=default --instruction-set-variant=x86_64 --compiler-filter=verify --compilation-reason=install --compact-dex-level=none --max-image-block-size=524288 --resolve-startup-const-strings=true --generate-mini-debug-info --runtime-arg -Xtarget-sdk-version:33 --runtime-arg -Xhidden-api-policy:enabled --runtime-arg -Xms64m --runtime-arg -Xmx512m --comments=app-version-name:1.6.5,app-version-code:35,art-version:340818082
+10-25 21:18:06.552 15527 15527 I dex2oat64: /apex/com.android.art/bin/dex2oat64 --output-vdex-fd=7 --class-loader-context-fds=11 --class-loader-context=PCL[]{PCL[/system/framework/org.apache.http.legacy.jar]} --classpath-dir=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA== --compiler-filter=verify --compilation-reason=install --compact-dex-level=none --max-image-block-size=524288 --resolve-startup-const-strings=true --generate-mini-debug-info --comments=app-version-name:1.6.5,app-version-code:35,art-version:340818082
+10-25 21:18:08.418   551   668 W ProcessStats: Tracking association SourceState{5edd6b1 com.google.android.gms.unstable/10129 BTop #13444} whose proc state 2 is better than process ProcessState{d210b14 com.google.android.gms/10129 pkg=com.google.android.gms} proc state 9 (98 skipped)
+10-25 21:18:08.419   551   678 D ActivityManager: freezing 15438 com.google.android.rkpdapp
+10-25 21:18:11.022   551  2312 W BatteryExternalStatsWorker: error reading Bluetooth stats: 11
+10-25 21:18:11.551  3759 15489 I ChimeraPrvdrProxy: Shutting down chimera ContentProvider com.google.android.gms.reminders.provider.RemindersChimeraProvider
+10-25 21:18:12.749 15527 15527 I dex2oat64: Using CollectorTypeCC GC.
+10-25 21:18:13.283   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:13.307   810   933 D EGL_emulation: app_time_stats: avg=2265.91ms min=6.68ms max=13269.23ms count=6
+10-25 21:18:13.427 15527 15527 I dex2oat64: Large app, accepted running with swap.
+10-25 21:18:14.140   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:14.302 15527 15531 W dex2oat64: Method void com.google.android.gms.internal.ads.zzced.zzb() failed lock verification and will run slower.
+10-25 21:18:14.302 15527 15531 W dex2oat64: Common causes for lock verification issues are non-optimized dex code
+10-25 21:18:14.302 15527 15531 W dex2oat64: and incorrect proguard optimizations.
+10-25 21:18:14.302 15527 15531 W dex2oat64: Method boolean com.google.android.gms.internal.ads.zzced.zzu(java.lang.String, java.lang.String[]) failed lock verification and will run slower.
+10-25 21:18:15.125 15527 15527 I dex2oat64: dex2oat took 8.631s (9.574s cpu) (threads: 3) arena alloc=0B (0B) java alloc=20MB (20999456B) native alloc=4542KB (4651840B) free=1361KB (1393904B) swap=16MB (16777216B)
+10-25 21:18:15.134 15520 15526 I artd    : dex2oat returned code 0
+10-25 21:18:15.139   551   637 I ArtService: Dexopt result: [packageName = com.boi.ua.android] DexContainerFileDexoptResult{dexContainerFile=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.apk, primaryAbi=true, abi=x86_64, actualCompilerFilter=verify, status=PERFORMED, dex2oatWallTimeMillis=8904, dex2oatCpuTimeMillis=9780, sizeBytes=27324828, sizeBeforeBytes=0}
+10-25 21:18:15.144   551 15534 W FileUtils: Failed to chmod(/data/system/package-usage.list): android.system.ErrnoException: chmod failed: ENOENT (No such file or directory)
+10-25 21:18:15.190   551   637 I ActivityManager: Force stopping com.boi.ua.android appid=10191 user=0: pkg removed
+10-25 21:18:15.526   899   899 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_REMOVED
+10-25 21:18:15.563   551   637 D CompatibilityChangeReporter: Compat change id reported: 168419799; UID 10191; state: DISABLED
+10-25 21:18:15.564   551   637 D CompatibilityChangeReporter: Compat change id reported: 273564678; UID 10191; state: DISABLED
+10-25 21:18:15.743   899   899 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_REMOVED
+10-25 21:18:15.833   899   899 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_ADDED
+10-25 21:18:15.852   551   736 D CompatibilityChangeReporter: Compat change id reported: 151105954; UID 1000; state: ENABLED
+10-25 21:18:15.853   551   736 E AppOps  : attributionTag VCN not declared in manifest of android
+10-25 21:18:15.966   551   612 D ActivityManager: sync unfroze 11225 com.google.android.permissioncontroller for 3
+10-25 21:18:15.969   551   700 W PackageConfigPersister: App-specific configuration not found for packageName: com.boi.ua.android and userId: 0
+10-25 21:18:16.014   551   600 W Looper  : Slow dispatch took 119ms android.fg h=android.os.Handler c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@a9b83fa m=0
+10-25 21:18:16.028   551   551 W Looper  : Slow dispatch took 513ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@3c98dab m=0
+10-25 21:18:16.040   551   612 W ActivityManager: Slow operation: 54ms so far, now at startProcess: done creating new process record
+10-25 21:18:16.055   551   612 W ActivityManager: Slow operation: 54ms so far, now at startProcess: stepping in to startProcess
+10-25 21:18:16.055   551   612 I ActivityManager: com.android.vending is exempt from freezer
+10-25 21:18:16.055   551   612 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10131; state: DISABLED
+10-25 21:18:16.056   551   612 W ActivityManager: Slow operation: 70ms so far, now at startProcess: done starting proc!
+10-25 21:18:16.063   551   775 I SdkSandboxManager: No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10191, mPackageName='com.boi.ua.android, mAppProcessToken='null'}
+10-25 21:18:16.085   551   613 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10131; state: ENABLED
+10-25 21:18:16.121   551   775 I SdkSandboxManager: No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10191, mPackageName='com.boi.ua.android, mAppProcessToken='null'}
+10-25 21:18:16.147   551   551 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 1000; state: DISABLED
+10-25 21:18:16.148   551   551 W Looper  : Slow delivery took 545ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@7f29852 m=0
+10-25 21:18:16.148   551   551 W Looper  : Slow dispatch took 119ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@7f29852 m=0
+10-25 21:18:16.199   551   637 D PackageInstallerSession: Marking session 1042043219 as applied
+10-25 21:18:16.244   344   344 D Zygote  : Forked child process 15540
+10-25 21:18:16.253   551   551 W Looper  : Slow dispatch took 103ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@e200723 m=0
+10-25 21:18:16.259   551   689 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+10-25 21:18:16.351 15540 15540 I ding:background: Using CollectorTypeCC GC.
+10-25 21:18:16.371 12759 12759 I Finsky  : [2] ansy - Received: android.intent.action.PACKAGE_REMOVED, [v3Doxjv_9FwbW_ueKLBiRYeMOwBl8M8YMw4LfA0rZLg]
+10-25 21:18:16.379 15540 15540 W ding:background: Unexpected CPU variant for x86: x86_64.
+10-25 21:18:16.379 15540 15540 W ding:background: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-25 21:18:16.410 15540 15540 E ding:background: Not starting debugger since process cannot load the jdwp agent.
+10-25 21:18:16.471   551   613 W ActivityManager: Slow operation: 206ms so far, now at startProcess: returned from zygote!
+10-25 21:18:16.506   551   613 W ActivityManager: Slow operation: 452ms so far, now at startProcess: done updating battery stats
+10-25 21:18:16.506   551   613 W ActivityManager: Slow operation: 452ms so far, now at startProcess: building log message
+10-25 21:18:16.506   551   613 I ActivityManager: Start proc 15540:com.android.vending:background/u0a131 for broadcast {com.android.vending/com.google.android.finsky.packagemonitor.backgroundimpl.BackgroundPackageMonitorReceiverImpl$RegisteredReceiver}
+10-25 21:18:16.506   551   613 W ActivityManager: Slow operation: 452ms so far, now at startProcess: starting to update pids map
+10-25 21:18:16.506   551   613 W ActivityManager: Slow operation: 452ms so far, now at startProcess: done updating pids map
+10-25 21:18:16.506   551   613 W ActivityManager: Slow operation: 360ms so far, now at startProcess: asking zygote to start proc
+10-25 21:18:16.553   551   736 E AppOps  : attributionTag VCN not declared in manifest of android
+10-25 21:18:16.589   551   551 W Looper  : Slow dispatch took 327ms main h=android.os.Handler c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@4014c76 m=0
+10-25 21:18:16.646   344   344 D Zygote  : Forked child process 15551
+10-25 21:18:16.647   551   613 W ActivityManager: Slow operation: 500ms so far, now at startProcess: returned from zygote!
+10-25 21:18:16.647   551   613 W ActivityManager: Slow operation: 500ms so far, now at startProcess: done updating battery stats
+10-25 21:18:16.675   551   613 W ActivityManager: Slow operation: 529ms so far, now at startProcess: building log message
+10-25 21:18:16.675   551   613 I ActivityManager: Start proc 15551:com.android.keychain/1000 for service {com.android.keychain/com.android.keychain.KeyChainService}
+10-25 21:18:16.675   551   613 W ActivityManager: Slow operation: 529ms so far, now at startProcess: starting to update pids map
+10-25 21:18:16.678   810   810 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 0
+10-25 21:18:16.687   551   613 W ActivityManager: Slow operation: 540ms so far, now at startProcess: done updating pids map
+10-25 21:18:16.689   551   551 W binder:551_3: type=1400 audit(0.0:120): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:16.694 11225 11225 I SafetyLabelChangedBroadcastReceiver: received broadcast packageName: com.boi.ua.android, current user: UserHandle{0}, packageChangeEvent: UPDATE, intent user: UserHandle{0}
+10-25 21:18:16.689   551   551 W binder:551_3: type=1400 audit(0.0:121): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:16.700   551   736 E AppOps  : attributionTag VCN not declared in manifest of android
+10-25 21:18:16.689   551   551 W binder:551_3: type=1400 audit(0.0:122): avc:  denied  { getopt } for  scontext=u:r:system_server:s0 tcontext=u:r:shell:s0 tclass=unix_stream_socket permissive=0
+10-25 21:18:16.718   899   899 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_ADDED
+10-25 21:18:16.800 15551 15551 I ndroid.keychain: Using CollectorTypeCC GC.
+10-25 21:18:16.924 15551 15551 W ndroid.keychain: Unexpected CPU variant for x86: x86_64.
+10-25 21:18:16.924 15551 15551 W ndroid.keychain: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-25 21:18:16.971 15551 15551 E ndroid.keychain: Not starting debugger since process cannot load the jdwp agent.
+10-25 21:18:17.003  1434  1434 W MediaProvider: WorkProfileOwnerApps cache is empty
+10-25 21:18:17.099   551   600 W Looper  : Slow dispatch took 409ms android.fg h=android.os.Handler c=com.android.server.location.injector.SystemPackageResetHelper$Receiver$$ExternalSyntheticLambda1@1b3bf26 m=0
+10-25 21:18:17.106   551   551 W Looper  : Slow dispatch took 411ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@b2a2767 m=0
+10-25 21:18:17.148   551   551 I Telecom : CarModeTracker: Package com.boi.ua.android is not tracked.: SSH.oR@AU4
+10-25 21:18:17.232   810   810 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 0
+10-25 21:18:17.235   810   810 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 0
+10-25 21:18:17.292   551   689 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+10-25 21:18:17.294   551   551 I Telecom : InCallController: updateCarModeForConnections: car mode apps: : SSH.oR@AU4
+10-25 21:18:17.296   551   551 I Telecom : InCallController: update carmode current:UserHandle{0} parent:null: SSH.oR@AU4
+10-25 21:18:17.351   551   551 W Looper  : Slow dispatch took 213ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@ab9198 m=0
+10-25 21:18:17.506 13738 13745 I gs.intelligence: Background concurrent copying GC freed 52278(2276KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 4449KB/8899KB, paused 244us,10us total 2.256s
+10-25 21:18:17.506 13738 13745 W gs.intelligence: Reducing the number of considered missed Gc histogram windows from 118 to 100
+10-25 21:18:17.674   551   704 D CompatibilityChangeReporter: Compat change id reported: 168419799; UID 10131; state: DISABLED
+10-25 21:18:17.674   551   704 D CompatibilityChangeReporter: Compat change id reported: 273564678; UID 10131; state: DISABLED
+10-25 21:18:17.716 15540 15540 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10131; state: ENABLED
+10-25 21:18:17.717 15540 15540 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10131; state: ENABLED
+10-25 21:18:17.911   810   917 W Looper  : Slow dispatch took 1085ms SysUiBg h=android.os.Handler c=com.android.systemui.controls.management.ControlsListingControllerImpl$changeUser$1@b412e12 m=0
+10-25 21:18:17.919   551   551 W Looper  : Slow dispatch took 565ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@c131ae m=0
+10-25 21:18:17.937   551   653 D CompatibilityChangeReporter: Compat change id reported: 170503758; UID 10131; state: ENABLED
+10-25 21:18:18.055 15551 15551 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 1000; state: ENABLED
+10-25 21:18:18.055 15551 15551 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 1000; state: ENABLED
+10-25 21:18:18.102 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.110 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.110 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.215 11225 11244 I PermissionControllerServiceImpl: Updating user sensitive for uid 10191
+10-25 21:18:18.260 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.260 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.260 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.368 15540 15540 D nativeloader: Configuring clns-6 for other apk /system/framework/org.apache.http.legacy.jar. target_sdk_version=37, uses_libraries=ALL, library_path=/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/base.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.en.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.x86_64.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.config.x86_64.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.apk!/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEG
+10-25 21:18:18.380 15540 15540 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+10-25 21:18:18.380 15540 15540 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+10-25 21:18:18.411   551   794 W Looper  : Slow dispatch took 100ms android.perm h=android.os.Handler c=<recycled PooledLambda@da1e712> m=0
+10-25 21:18:18.430   551   678 D ActivityManager: freezing 15402 com.android.providers.calendar
+10-25 21:18:18.532   551   600 W Looper  : Slow dispatch took 241ms android.fg h=android.os.Handler c=<recycled PooledLambda@da8b0e0> m=0
+10-25 21:18:18.532   551   600 W Looper  : Slow delivery took 226ms android.fg h=android.os.Handler c=<recycled PooledLambda@3f7bf99> m=0
+10-25 21:18:18.550   551   794 W Looper  : Slow dispatch took 139ms android.perm h=android.os.Handler c=<recycled PooledLambda@e8db63f> m=0
+10-25 21:18:18.559   551   551 W Looper  : Slow dispatch took 343ms main h=android.app.ActivityThread$H c=android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0@34fbbf8 m=0
+10-25 21:18:18.563 12151 12158 I .apps.wellbeing: Background concurrent copying GC freed 56479(2393KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5158KB/10MB, paused 48us,7us total 3.336s
+10-25 21:18:18.571 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.571 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.571 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.588   551  1969 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.591   551  2067 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.643   551  2095 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.644 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.644 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.644 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.653   551  2067 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.678 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.678 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.678 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.696 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.696 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.696   551   551 W AlarmManager: Package com.boi.ua.android, uid 10191 lost permission to set exact alarms!
+10-25 21:18:18.696 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.716   810   917 W Looper  : Slow delivery took 1207ms SysUiBg h=android.hardware.input.InputManagerGlobal$InputDeviceListenerDelegate c=null m=3
+10-25 21:18:18.718   551   903 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.721 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.721 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.721 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.740   551  2067 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.744 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.744 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.744 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.750 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.750 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.750 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.760 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.760 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.760 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.760   551   704 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.764   551  2067 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.765   551  2067 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.776 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.776 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.776 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.778   551  2067 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.779 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.779 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.779 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.782 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.782 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.782 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.793   551  2095 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.794   551  2095 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.795   551  2067 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.799   551   903 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.818 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.818 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.818 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.826 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():212 refreshing devices
+10-25 21:18:18.826 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device qwerty2 added
+10-25 21:18:18.826 11208 11208 I PkModeUpdater: PkModeUpdater.refreshDevices():224 device AT Translated Set 2 keyboard added
+10-25 21:18:18.831   551   590 I system_server: Background concurrent copying GC freed 438660(21MB) AllocSpace objects, 42(2024KB) LOS objects, 43% free, 31MB/55MB, paused 541us,28us total 3.480s
+10-25 21:18:18.832   964   964 D CarrierSvcBindHelper: onPackageUpdateFinished: com.boi.ua.android
+10-25 21:18:18.836   551  2067 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.837   551  2067 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.855   551   903 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.865   551  2067 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.867   551   903 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.868   551  2067 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.868   551  2095 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.868   551  2067 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.870   551   704 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.874   551   903 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.877   551   903 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.878   551  2095 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.882   551   704 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.885   551  2095 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.886   551   903 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.888   551   903 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.890   551  2095 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.891   551   653 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.899   551  2095 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.899   551  2067 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.901   551  2095 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.904   551  2067 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.904   551  2067 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.904   551  2067 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.904   551   903 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.905   551   704 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.908   551  2095 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.913   551  2067 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.915   551  2095 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.917   551   704 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.918   551   864 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.921   551   704 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.922   551   864 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.922   551  2033 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.923   551   867 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.923   551   704 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.929   551  1591 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.929   551  2033 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.935   551   704 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.942   551  2090 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.943   551  2090 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.943   551  2033 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.943   551   595 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.948   551  2090 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.949   551   595 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.949   551   864 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.952   551  2287 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.956   551  2067 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.957   551  2287 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.958   551  2095 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.960   551   903 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.966   551  2090 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.966   551  2090 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.966   551  2090 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.968   551  2090 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.968   551  2138 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.969   551   704 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.969   551   864 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.972   551  2287 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.972   551  2287 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.979   551  2287 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.979   551  2287 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.979   551  2287 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.979   551  2287 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.980   551  2287 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.980   551  2287 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.981   551   704 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.981   551  2033 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.990   551   597 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.990   551  2132 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.990   551  2095 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.991   551  2095 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.995   551  2144 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:18.995   551  2144 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:18.995   551  2144 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:18.995   551  2144 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:18.996   551  2144 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:18.996   551  2144 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.996   551  2144 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:18.998   551  2144 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:18.998   551  2144 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:18.998   551  2138 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.007   551  2095 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.007   551  2090 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.007   551  2287 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.008   551   864 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.026   551  2313 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.030   551  2287 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.030   551  2315 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.032   964   964 D CarrierSvcBindHelper: No carrier app for: 0
+10-25 21:18:19.036   964   964 D CarrierSvcBindHelper: onPackageModified: com.boi.ua.android
+10-25 21:18:19.036   964   964 D CarrierSvcBindHelper: No carrier app for: 0
+10-25 21:18:19.048   551  1406 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.051   551  2307 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.052   551  2307 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.066 15551 15551 D nativeloader: Configuring clns-shared-6 for other apk /system/app/KeyChain/KeyChain.apk. target_sdk_version=34, uses_libraries=, library_path=/system/app/KeyChain/lib/x86_64:/system/app/KeyChain/KeyChain.apk!/lib/x86_64:/system/lib64:/system_ext/lib64, permitted_path=/data:/mnt/expand:/data/user/0/com.android.keychain:/system/app/KeyChain:/system/lib64:/system_ext/lib64
+10-25 21:18:19.068   551  1406 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.077   551  1406 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.079   551  1406 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.098   551  2307 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.098   551  1406 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.098   551  1406 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.105   551  2307 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.105   551  2307 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.105   551  2307 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.109   551  1406 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.110   551  1406 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.110   551  1406 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.110   551  1406 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.110   551  1406 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.110   551  1406 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.111   551  2307 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.112   551  1406 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.112   551  2145 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.113 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:19.113 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:19.117   551  2070 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.117 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:19.117 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:19.120   551  1406 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.121 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.121 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.122   551  2307 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.122   551  2130 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.122   551  1406 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.127   551  2307 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.131   551  2307 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.135   551  2307 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.138   551  2307 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.139   551  2307 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.144   551  2145 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.152   551  2307 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.168   551  2307 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.179   551  1567 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.179   551   867 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.184   551  1406 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.185   551  1406 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.190   551  2070 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.197   551  2070 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.208   551  2070 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.212   551  2070 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.213   551   864 W ProcessStats: Tracking association SourceState{5edd6b1 com.google.android.gms.unstable/10129 BTop #13470} whose proc state 2 is better than process ProcessState{d210b14 com.google.android.gms/10129 pkg=com.google.android.gms} proc state 9 (116 skipped)
+10-25 21:18:19.213   551  2145 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.214   551  1406 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.221   551  2070 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.222   551  2145 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.224   551  2070 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.231   551   963 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.233   551  2145 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.233   551  2070 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.237   551  2070 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.242   551  2070 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.244   551  2070 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.247   551  2070 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.257   551  2070 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.263   551  2070 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.264   551  2145 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.265   551  2145 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.270   551   963 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.278   551   963 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.283   551   597 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.284   551   597 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.285   551  2145 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.290   551   864 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.291   551  2145 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.293   551  2145 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.294   551   864 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.305   551   963 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.306   551  2145 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.306   551  1591 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.308   551  2145 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.332   551  2145 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.333   551   864 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.334   551  2145 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.336   551  1591 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.354   551  1591 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.359   551  1406 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.360   551  1591 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.359 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:19.359 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:19.362   551  1591 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.368   551   551 W Looper  : Drained
+10-25 21:18:19.368 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:19.368 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:19.369   551  1591 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.382   551   597 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.383 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.383 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.435   551   600 W Looper  : Drained
+10-25 21:18:19.440   551   600 W Looper  : Slow dispatch took 111ms android.fg h=android.os.Handler c=<recycled PooledLambda@b4f4cab> m=0
+10-25 21:18:19.454 15551 15551 V GraphicsEnvironment: Currently set values for:
+10-25 21:18:19.460 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.460 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.462   551  2145 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.469   551  2070 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.476   551  2070 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.479 15551 15551 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+10-25 21:18:19.479 15551 15551 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+10-25 21:18:19.495   551  2145 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.496   551  1406 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.502 15551 15551 V GraphicsEnvironment: ANGLE GameManagerService for com.android.keychain: false
+10-25 21:18:19.518   551  2070 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.519 15551 15551 V GraphicsEnvironment: com.android.keychain is not listed in per-application setting
+10-25 21:18:19.519 15551 15551 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+10-25 21:18:19.541   551  1406 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.543   551  1591 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.548   551  1591 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.549   551  1591 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.559 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:19.559 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:19.593   551  2145 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.592 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:19.592 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:19.597   551  2145 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.603   551   600 W Looper  : Slow dispatch took 164ms android.fg h=android.os.Handler c=<recycled PooledLambda@e8db63f> m=0
+10-25 21:18:19.623   551   597 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.638   551   600 W Looper  : Slow delivery took 280ms android.fg h=android.os.Handler c=<recycled PooledLambda@942cbdd> m=0
+10-25 21:18:19.646   551   592 W System  : A resource failed to call close. 
+10-25 21:18:19.658 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.658 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:19.678   551   864 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.680   551  1591 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.687   551  2145 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.688   551  2145 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.688   551   597 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.697   551  1969 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.701   551  1591 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.705   551   864 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.708   551   864 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.708   551  2145 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.712   551  1591 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.713   551  1591 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.727   551  1969 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.731 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:19.731 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:19.736   551  1969 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.738   551  2070 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.739   551  2145 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.749   551   597 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.757   551   597 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.756 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:19.758   964  1179 D ImsResolver: maybeAddedImsService, packageName: com.boi.ua.android
+10-25 21:18:19.771   551  2070 W EventHub: Multiple scan codes map to the same key code 8, returning only the first match
+10-25 21:18:19.776   551  2070 W EventHub: Multiple scan codes map to the same key code 9, returning only the first match
+10-25 21:18:19.781   551  1591 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.782   551  1591 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.783   551   963 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.788   551   600 W Looper  : Slow dispatch took 149ms android.fg h=android.os.Handler c=<recycled PooledLambda@bdd9720> m=0
+10-25 21:18:19.794   551   597 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.795   551   963 W EventHub: Multiple scan codes map to the same key code 33, returning only the first match
+10-25 21:18:19.830   551   963 W EventHub: Multiple scan codes map to the same key code 47, returning only the first match
+10-25 21:18:19.830   551   963 W EventHub: Multiple scan codes map to the same key code 32, returning only the first match
+10-25 21:18:19.832   551   963 W EventHub: Multiple scan codes map to the same key code 34, returning only the first match
+10-25 21:18:19.834   551   963 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 1000. pid: 15551
+10-25 21:18:19.849   551   597 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.851   551  2070 W EventHub: Multiple scan codes map to the same key code 30, returning only the first match
+10-25 21:18:19.856   551  1406 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:19.874   551   963 W EventHub: Multiple scan codes map to the same key code 73, returning only the first match
+10-25 21:18:20.626 12759 12759 I Finsky  : [2] Resetting scheduler db
+10-25 21:18:20.861 12759 12759 I Finsky  : [2] ansy - Received: android.intent.action.PACKAGE_ADDED, [v3Doxjv_9FwbW_ueKLBiRYeMOwBl8M8YMw4LfA0rZLg]
+10-25 21:18:21.119 15554 15554 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+10-25 21:18:21.209 15554 15554 I AndroidRuntime: Using default boot image
+10-25 21:18:21.209 15554 15554 I AndroidRuntime: Leaving lock profiling enabled
+10-25 21:18:21.291 15554 15554 I app_process: Using CollectorTypeCC GC.
+10-25 21:18:21.554 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.en.dm': No such file or directory
+10-25 21:18:21.554 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.en.dm': No such file or directory
+10-25 21:18:21.555 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.558 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.x86_64.dm': No such file or directory
+10-25 21:18:21.558 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.x86_64.dm': No such file or directory
+10-25 21:18:21.575 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.579 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.dm': No such file or directory
+10-25 21:18:21.579 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.dm': No such file or directory
+10-25 21:18:21.601 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.604 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.config.x86_64.dm': No such file or directory
+10-25 21:18:21.604 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.config.x86_64.dm': No such file or directory
+10-25 21:18:21.625 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.626 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.dm': No such file or directory
+10-25 21:18:21.626 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.dm': No such file or directory
+10-25 21:18:21.634 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.635 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.config.x86_64.dm': No such file or directory
+10-25 21:18:21.635 15540 15540 W ziparchive: Unable to open '/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.config.x86_64.dm': No such file or directory
+10-25 21:18:21.645 15540 15540 W ding:background: Entry not found
+10-25 21:18:21.661 15540 15540 D nativeloader: Configuring clns-7 for other apk /data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/base.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.en.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_config.x86_64.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_data_loader.config.x86_64.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.apk:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/split_phonesky_webrtc_native_lib.config.x86_64.apk. target_sdk_version=37, uses_libraries=, library_path=/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.vending-5ChwEsEGBmWTWt8fc3C5Jg==/lib/x86_64:/data/app/~~Rf2rLXBjPDXe21E8OrSp9w==/com.android.ven
+10-25 21:18:21.726   551   611 W WindowMagnificationMgr: requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+10-25 21:18:21.731   551   611 W WindowMagnificationMgr: requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+10-25 21:18:21.952  3759 15588 I ProximityAuth: [RecentAppsMediator] Package added: (user=UserHandle{0}) com.boi.ua.android
+10-25 21:18:22.154  3759  3759 D BoundBrokerSvc: onRebind: Intent { act=com.google.android.gms.auth.aang.events.services.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiService }
+10-25 21:18:22.170 15540 15540 V GraphicsEnvironment: Currently set values for:
+10-25 21:18:22.171 15540 15540 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+10-25 21:18:22.171 15540 15540 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+10-25 21:18:22.179 15540 15540 V GraphicsEnvironment: ANGLE GameManagerService for com.android.vending: false
+10-25 21:18:22.180 15540 15540 V GraphicsEnvironment: com.android.vending is not listed in per-application setting
+10-25 21:18:22.189 15540 15540 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+10-25 21:18:22.291  3759 15582 I Fitness : (REDACTED) FitCleanupIntentOperation received Intent %s
+10-25 21:18:22.326  3759 15586 I AppBackupStateCleanupIO: Backup state cleanup on uninstall is disabled. [CONTEXT service_id=229 ]
+10-25 21:18:22.333   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:22.436 15540 15540 I Finsky:background: [2] Process created at version: 53.6.16-34 [0] [PR] 996771783
+10-25 21:18:22.442 12759 12759 I Finsky  : [2] DTU: Received onPackageAdded, replacing: true
+10-25 21:18:22.500 12759 15578 I Finsky  : [136] Asset module broadcast after update successful for package com.boi.ua.android.
+10-25 21:18:22.499 12759 12759 I Finsky  : [2] ansy - Received: android.intent.action.PACKAGE_ADDED, [v3Doxjv_9FwbW_ueKLBiRYeMOwBl8M8YMw4LfA0rZLg]
+10-25 21:18:22.684 12759 12759 I Finsky  : [2] ansy - Deduping intent android.intent.action.PACKAGE_ADDED
+10-25 21:18:22.800  3759 15586 I FraudProtectUtils: Not in testing population, skipping local test bank apps. [CONTEXT service_id=469 ]
+10-25 21:18:22.809  3759 15586 I FraudProtectUtils: (REDACTED) Latest bank app list size: %d, %s isBankApp: false
+10-25 21:18:22.814  3759 15586 I PackageInstallIntentOp: (REDACTED) Package %s is not a bank app. Skipping updates.
+10-25 21:18:22.940 12759 12759 I Finsky  : [2] ansy - Received: android.intent.action.PACKAGE_ADDED, [v3Doxjv_9FwbW_ueKLBiRYeMOwBl8M8YMw4LfA0rZLg]
+10-25 21:18:22.972 15540 15540 I Finsky:background: [2] [BGP] Initializing early flags...
+10-25 21:18:22.973 15540 15540 I Finsky:background: [2] [BGP] Initializing Gservices...
+10-25 21:18:22.997 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 1-1337, CT: 1792912284999, Constraints: [{ L: 14399999, D: 45783047, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:22.997 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 10-79, CT: 1792912284854, Constraints: [{ L: 0, D: 86400000, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:22.997 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 24-77777777, CT: 1792912285386, Constraints: [{ L: 1, D: 82800000, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_NONE, B: BATTERY_ANY }]
+10-25 21:18:23.007 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 26-1414141414, CT: 1792912285399, Constraints: [{ L: 43104974, D: 44004974, C: CHARGING_NONE, I: IDLE_NONE, N: NET_NONE, B: BATTERY_ANY }]
+10-25 21:18:23.008 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 44-1027, CT: 1792912280229, Constraints: [{ L: 0, D: 86400000, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_NONE, B: BATTERY_NOT_LOW }]
+10-25 21:18:23.056 15540 15540 I Finsky:background: [2] [BGP] Initializing flags...
+10-25 21:18:23.058 12759 12759 I Finsky  : [2] ansy - Deduping intent android.intent.action.PACKAGE_ADDED
+10-25 21:18:23.112 12759 12828 I Finsky  : [66] RECEIVER_PACKAGE_MONITOR#logWorkEndAndFinishGoAsync: SUCCESS
+10-25 21:18:23.195   551  2070 D CompatibilityChangeReporter: Compat change id reported: 161145287; UID 10131; state: ENABLED
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: <DWB> Call failed: get_actions
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: java.util.concurrent.TimeoutException: Waited 5000 milliseconds (plus 8 milliseconds, 212068 nanoseconds delay) for sgb@a1c7985[status=PENDING, info=[inputFuture=[sga@d0473da[status=PENDING, setFuture=[sfi@acdf00b[status=PENDING, info=[inputFuture=[sgb@c54bee8[status=PENDING, info=[inputFuture=[sgb@1b02901[status=PENDING, info=[inputFuture=[sgu@c45f3a6[status=PENDING, info=[futures=[sgb@26981e7[status=PENDING, info=[inputFuture=[sgb@c2ae194[status=PENDING, info=[inputFuture=[shv@b75543d[status=PENDING, info=[delegate=[sja@4cda432[status=PENDING, setFuture=[sgb@4425583[status=PENDING, info=[inputFuture=[sga@c9e8300[status=PENDING, info=[inputFuture=[shv@d67f739[status=PENDING, info=[delegate=[sja@1add17e[status=PENDING, setFuture=[sga@24ac6df[status=PENDING, info=[function=[propagating=[gld@1e8cf2c]]]]]]]]]], function=[propagating=[ftm@747cdf5]]]]], function=[propagating=[gbl@ad1878a]]]]]]]]]], function=[propagating=[gbk@13ef1fb]]]]], function=[propagating=[hbs@8a9b218]]]]]]]], function=[propagating=[hiw@b145471]]]]], function=[propagating=[fyw@9c89256]]]]], exceptionType=[class java.lang.Throwable], fallback=[propagating=[gbl@b80b2d7]]]]]]], function=[propagating=[fyw@593d7c4]]]]
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at sfy.t(PG:386)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at sfr.get(PG:6)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at shn.get(PG:10)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at com.google.android.apps.wellbeing.api.impl.WellbeingSettingsProvider.i(PG:9)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at com.google.android.apps.wellbeing.api.impl.WellbeingSettingsProvider.call(PG:153)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at android.content.ContentProvider.call(ContentProvider.java:2679)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at android.content.ContentProvider$Transport.call(ContentProvider.java:628)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at android.content.ContentProviderNative.onTransact(ContentProviderNative.java:307)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at android.os.Binder.execTransactInternal(Binder.java:1339)
+10-25 21:18:23.303 12151 13763 W WellbeingSettingsProvid: 	at android.os.Binder.execTransact(Binder.java:1275)
+10-25 21:18:23.621 15540 15540 I Finsky:background: [2] Finished reading experiment flags from file [0tGUNCGIkbk4o6-fQ335kUYSKwVj4lusnHT-A5Dsy08] numFlags=2784.
+10-25 21:18:24.174 12759 12854 I Finsky  : [78] SCH: Scheduling 0 system job(s)
+10-25 21:18:24.240   810   917 W Looper  : Drained
+10-25 21:18:24.250   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:24.253   964   982 I m.android.phone: Background young concurrent copying GC freed 94897(3630KB) AllocSpace objects, 0(0B) LOS objects, 48% free, 3524KB/6851KB, paused 2.229ms,11us total 4.627s
+10-25 21:18:24.253   964   982 W m.android.phone: Reducing the number of considered missed Gc histogram windows from 108 to 100
+10-25 21:18:24.274 15540 15540 I Finsky:background: [2] Finished reading experiment flags from file [Se-xCc4LzNyh3UrKMIU2sUf-PUKz4oQEbpKZDMuaFno] numFlags=2158.
+10-25 21:18:24.448 12759 12828 D CompatibilityChangeReporter: Compat change id reported: 160794467; UID 10131; state: ENABLED
+10-25 21:18:24.536 15540 15540 I Finsky:background: [2] [BGP] Initializing crash detector...
+10-25 21:18:24.644 15540 15540 I Finsky:background: [2] ansn - Registering in memory receiver for android.intent.action.PACKAGE_ADDED and android.intent.action.PACKAGE_REMOVED
+10-25 21:18:24.666   551  1591 D SafetySourceDataValidator: Package com.android.vending has expected signature
+10-25 21:18:24.666   551  1591 D SafetySourceDataValidator: Package com.android.vending has expected signature
+10-25 21:18:24.748   551  2070 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 10131. pid: 15540
+10-25 21:18:24.795  1097  1109 I s.nexuslauncher: Background concurrent copying GC freed 85249(4839KB) AllocSpace objects, 84(1972KB) LOS objects, 49% free, 7221KB/14MB, paused 130us,13us total 9.440s
+10-25 21:18:24.795  1097  1109 W s.nexuslauncher: Reducing the number of considered missed Gc histogram windows from 298 to 100
+10-25 21:18:24.812 15554 15554 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+10-25 21:18:24.814 15540 15540 I Finsky:background: [2] This process start was not selected for Play memory metrics collection.
+10-25 21:18:25.041 12759 15589 I Finsky  : [137] SCH: Received scheduling request: Id: 12-1, Constraints: [{ L: 15000, D: 86400000, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:25.055 15554 15554 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-25 21:18:25.055 15554 15554 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt72l.dat
+10-25 21:18:25.092 15540 15540 I Finsky:background: [2] ansn - Received: android.intent.action.PACKAGE_ADDED, [v3Doxjv_9FwbW_ueKLBiRYeMOwBl8M8YMw4LfA0rZLg]
+10-25 21:18:25.129 15540 15625 I Finsky:background: [79] RECEIVER_PACKAGE_MONITOR_BACKGROUND#logWorkEndAndFinishGoAsync: TIMEOUT_BLOCKING_RECEIVER_WATCHER
+10-25 21:18:25.139 15554 15554 W app_process: Unexpected CPU variant for x86: x86_64.
+10-25 21:18:25.139 15554 15554 W app_process: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-25 21:18:25.169 12759 15589 I Finsky  : [137] SCH: Received scheduling request: Id: 12-1, Constraints: [{ L: 15000, D: 86400000, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:25.284  3759 15616 I Auth    : (REDACTED) [SupervisedAccountIntentOperation] onHandleIntent: %s
+10-25 21:18:25.424  3759 15616 I FraudProtectUtils: Not in testing population, skipping local test bank apps. [CONTEXT service_id=469 ]
+10-25 21:18:25.424  3759 15616 I FraudProtectUtils: (REDACTED) Latest bank app list size: %d, %s isBankApp: false
+10-25 21:18:25.424  3759 15616 I PackageInstallIntentOp: (REDACTED) Package %s is not a bank app. Skipping updates.
+10-25 21:18:25.437  3759 15594 W AppInstallOperation: FDL Migration::InstallIntentOperation by FDL Module [CONTEXT service_id=77 ]
+10-25 21:18:25.510 15554 15554 W libc    : Access denied finding property "ro.product.name_for_attestation"
+10-25 21:18:25.511 15554 15554 W libc    : Access denied finding property "ro.product.brand_for_attestation"
+10-25 21:18:25.511 15554 15554 W libc    : Access denied finding property "ro.product.model_for_attestation"
+10-25 21:18:25.520   551   600 W Looper  : Drained
+10-25 21:18:25.521 15554 15554 D AndroidRuntime: Calling main entry com.android.commands.monkey.Monkey
+10-25 21:18:25.524 15554 15554 W Monkey  : args: [-p, com.boi.ua.android, -c, android.intent.category.LAUNCHER, 1]
+10-25 21:18:25.524 15554 15554 W Monkey  :  arg: "-p"
+10-25 21:18:25.524 15554 15554 W Monkey  :  arg: "com.boi.ua.android"
+10-25 21:18:25.524 15554 15554 W Monkey  :  arg: "-c"
+10-25 21:18:25.524 15554 15554 W Monkey  :  arg: "android.intent.category.LAUNCHER"
+10-25 21:18:25.524 15554 15554 W Monkey  :  arg: "1"
+10-25 21:18:25.524 15554 15554 W Monkey  : data="com.boi.ua.android"
+10-25 21:18:25.524 15554 15554 W Monkey  : data="android.intent.category.LAUNCHER"
+10-25 21:18:25.505 15554 15554 W main    : type=1400 audit(0.0:123): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=85 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+10-25 21:18:25.624  3759 15586 I NearbyDiscovery: (REDACTED) processGrantSlicePermission: %s
+10-25 21:18:25.505 15554 15554 W main    : type=1400 audit(0.0:124): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=85 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+10-25 21:18:25.686  3759  3759 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-25 21:18:25.686  3759  3759 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-25 21:18:25.505 15554 15554 W main    : type=1400 audit(0.0:125): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=85 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+10-25 21:18:25.755   551  1406 W ActivityManager: registerReceiverWithFeature: no app for null
+10-25 21:18:25.790 15554 15554 W System  : No Compatibility callbacks set! Querying change 263076149
+10-25 21:18:25.790 15554 15554 W System  : No Compatibility callbacks set! Querying change 263076149
+10-25 21:18:25.790 15554 15554 W System  : No Compatibility callbacks set! Querying change 263076149
+10-25 21:18:25.868   551  1406 D CompatibilityChangeReporter: Compat change id reported: 161252188; UID 10191; state: DISABLED
+10-25 21:18:25.875   551  1406 W ActivityTaskManager: callingPackage for (uid=2000, pid=15554) has no WPC
+10-25 21:18:25.912   551  1406 D CompatibilityChangeReporter: Compat change id reported: 265464455; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 265452344; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 266124927; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 265451093; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 265456536; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 255940284; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 236283604; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 263959004; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 264304459; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 264301586; UID 10191; state: DISABLED
+10-25 21:18:25.913   551  1406 D CompatibilityChangeReporter: Compat change id reported: 254631730; UID 10191; state: DISABLED
+10-25 21:18:25.914   551  1406 D CompatibilityChangeReporter: Compat change id reported: 273509367; UID 10191; state: DISABLED
+10-25 21:18:25.914   551  1406 D CompatibilityChangeReporter: Compat change id reported: 263259275; UID 10191; state: DISABLED
+10-25 21:18:25.914   551  1406 D CompatibilityChangeReporter: Compat change id reported: 174042980; UID 10191; state: DISABLED
+10-25 21:18:25.914   551  1406 D CompatibilityChangeReporter: Compat change id reported: 174042936; UID 10191; state: DISABLED
+10-25 21:18:25.914   551  1406 D CompatibilityChangeReporter: Compat change id reported: 181136395; UID 10191; state: DISABLED
+10-25 21:18:25.925   551  1406 D CompatibilityChangeReporter: Compat change id reported: 194480991; UID 10191; state: ENABLED
+10-25 21:18:26.004 15540 15624 W Settings: Setting download_manager_max_bytes_over_mobile has moved from android.provider.Settings.Secure to android.provider.Settings.Global.
+10-25 21:18:26.009 12759 15640 D TrafficStats: tagSocket(131) with statsTag=0xffffffff, statsUid=-1
+10-25 21:18:26.011 12759 15569 D TrafficStats: tagSocket(132) with statsTag=0xffffffff, statsUid=-1
+10-25 21:18:26.026   551  1406 D CompatibilityChangeReporter: Compat change id reported: 184838306; UID 10191; state: DISABLED
+10-25 21:18:26.031   551  1406 D CompatibilityChangeReporter: Compat change id reported: 185004937; UID 10191; state: DISABLED
+10-25 21:18:26.042   551  1406 D CompatibilityChangeReporter: Compat change id reported: 197654537; UID 10191; state: ENABLED
+10-25 21:18:26.049 15540 15624 I Finsky:background: [78] SettingNotFoundException for download_manager_max_bytes_over_mobile
+10-25 21:18:26.049 15540 15624 W Settings: Setting download_manager_recommended_max_bytes_over_mobile has moved from android.provider.Settings.Secure to android.provider.Settings.Global.
+10-25 21:18:26.052   551  2070 I ActivityManager: Killing 13847:com.android.emergency/u0a163 (adj 965): empty #17
+10-25 21:18:26.070 15540 15624 I Finsky:background: [78] SettingNotFoundException for download_manager_recommended_max_bytes_over_mobile
+10-25 21:18:26.074 15540 15621 I Finsky:background: [75] RECEIVER_PACKAGE_MONITOR_BACKGROUND#logWorkEndAndFinishGoAsync: SUCCESS
+10-25 21:18:26.099   551  1406 D CompatibilityChangeReporter: Compat change id reported: 205907456; UID 10191; state: ENABLED
+10-25 21:18:26.139   551   614 I libprocessgroup: Successfully killed process cgroup uid 10163 pid 13847 in 76ms
+10-25 21:18:26.144  3759 15617 W SQLiteLog: (28) double-quoted string literal: "com.boi.ua.android"
+10-25 21:18:26.162   551  1406 D CompatibilityChangeReporter: Compat change id reported: 194833441; UID 10191; state: ENABLED
+10-25 21:18:26.163   551  1406 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.boi.ua.android/com.boi.ua.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+10-25 21:18:26.166   551   603 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10191; state: DISABLED
+10-25 21:18:26.166   551   603 D CompatibilityChangeReporter: Compat change id reported: 177438394; UID 10191; state: DISABLED
+10-25 21:18:26.166   551   603 D CompatibilityChangeReporter: Compat change id reported: 135772972; UID 10191; state: DISABLED
+10-25 21:18:26.166   551   603 D CompatibilityChangeReporter: Compat change id reported: 135754954; UID 10191; state: ENABLED
+10-25 21:18:26.168   551   613 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10191; state: ENABLED
+10-25 21:18:26.191 15554 15554 I Monkey  : Events injected: 1
+10-25 21:18:26.193 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:26.193 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:26.194 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:26.194 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:26.202 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.202 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.215   344   344 D Zygote  : Forked child process 15660
+10-25 21:18:26.220   551   613 W ActivityManager: Slow operation: 54ms so far, now at startProcess: returned from zygote!
+10-25 21:18:26.220   810   870 V WindowManagerShell: Transition requested: android.os.BinderProxy@ab649e3 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=48 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.boi.ua.android/com.boi.ua.MainActivity } baseActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} topActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} origActivity=null realActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} numActivities=1 lastActiveTime=7664795 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@2b2cfe0} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{8b8f299 com.boi.ua.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-25 21:18:26.220   551   613 W ActivityManager: Slow operation: 54ms so far, now at startProcess: done updating battery stats
+10-25 21:18:26.220   551   613 W ActivityManager: Slow operation: 54ms so far, now at startProcess: building log message
+10-25 21:18:26.220   551   613 I ActivityManager: Start proc 15660:com.boi.ua.android/u0a191 for next-top-activity {com.boi.ua.android/com.boi.ua.MainActivity}
+10-25 21:18:26.220   551   613 W ActivityManager: Slow operation: 54ms so far, now at startProcess: starting to update pids map
+10-25 21:18:26.229 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:26.229 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:26.235 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:26.235 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:26.237 15540 15624 I Finsky:background: [78] registerListener
+10-25 21:18:26.254 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.254 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.258 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.258 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.261 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:26.261 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:26.263 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:26.263 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:26.265 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.265 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:26.267 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:26.267 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:26.268 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:26.277 15660 15660 I .boi.ua.android: Using CollectorTypeCC GC.
+10-25 21:18:26.277 15660 15660 W .boi.ua.android: Unexpected CPU variant for x86: x86_64.
+10-25 21:18:26.277 15660 15660 W .boi.ua.android: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-25 21:18:26.279 15660 15660 E .boi.ua.android: Not starting debugger since process cannot load the jdwp agent.
+10-25 21:18:26.287   551   613 W ActivityManager: Slow operation: 122ms so far, now at startProcess: done updating pids map
+10-25 21:18:26.293 15554 15554 I Monkey  : ## Network stats: elapsed time=430ms (0ms mobile, 0ms wifi, 430ms not connected)
+10-25 21:18:26.301 15554 15554 I app_process: System.exit called, status: 0
+10-25 21:18:26.301 15554 15554 I AndroidRuntime: VM exiting with result code 0.
+10-25 21:18:26.317 15540 15624 I Finsky:background: [78] DFS: Listener added for usr@4ef2d54
+10-25 21:18:26.317 15540 15624 I Finsky:background: [78] registerListener
+10-25 21:18:26.357   551   551 W Looper  : Slow dispatch took 156ms main h=com.android.providers.settings.SettingsProvider$SettingsRegistry$MyHandler c=null m=1
+10-25 21:18:26.370 15540 15624 I Finsky:background: [78] registerListener
+10-25 21:18:26.370 15540 15624 I Finsky:background: [78] DFS: Listener added for aslu@16f819f
+10-25 21:18:26.407   551   668 D CompatibilityChangeReporter: Compat change id reported: 265195908; UID 10191; state: ENABLED
+10-25 21:18:26.425 15660 15660 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10191; state: ENABLED
+10-25 21:18:26.425 15660 15660 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10191; state: DISABLED
+10-25 21:18:26.428   551  2070 D CompatibilityChangeReporter: Compat change id reported: 170503758; UID 10191; state: ENABLED
+10-25 21:18:26.429 15660 15660 D nativeloader: Configuring clns-6 for other apk /system/framework/org.apache.http.legacy.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.boi.ua.android
+10-25 21:18:26.435 15540 15659 I Finsky:background: [85] Wrote row to frosting DB: 449
+10-25 21:18:26.438 15660 15660 D nativeloader: Configuring clns-7 for other apk /data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/base.apk. target_sdk_version=33, uses_libraries=, library_path=/data/app/~~z2N-dVQAsDwCExttuzMuVg==/com.boi.ua.android-6lt5n_eR65FI9xTXJdR-dA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.boi.ua.android
+10-25 21:18:26.441   551  2070 I ActivityManager: Killing 13852:com.android.traceur/u0a114 (adj 965): empty #17
+10-25 21:18:26.463 11862 11862 D CompatibilityChangeReporter: Compat change id reported: 150939131; UID 1000; state: ENABLED
+10-25 21:18:26.482 15660 15660 V GraphicsEnvironment: Currently set values for:
+10-25 21:18:26.482 15660 15660 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+10-25 21:18:26.482 15660 15660 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+10-25 21:18:26.482 15660 15660 V GraphicsEnvironment: ANGLE GameManagerService for com.boi.ua.android: false
+10-25 21:18:26.483 15660 15660 V GraphicsEnvironment: com.boi.ua.android is not listed in per-application setting
+10-25 21:18:26.483 15660 15660 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+10-25 21:18:26.497   551   597 D CompatibilityChangeReporter: Compat change id reported: 197654537; UID 1000; state: ENABLED
+10-25 21:18:26.502   409   409 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+10-25 21:18:26.543 15540 15659 I Finsky:background: [85] Wrote row to frosting DB: 450
+10-25 21:18:26.573   551  2070 D CompatibilityChangeReporter: Compat change id reported: 161252188; UID 10191; state: DISABLED
+10-25 21:18:26.655 15660 15660 E .boi.ua.android: No implementation found for byte[] o.n.onPostCreate(int, int) (tried Java_o_n_onPostCreate and Java_o_n_onPostCreate__II) - is the library loaded, e.g. System.loadLibrary?
+10-25 21:18:26.655 15660 15660 D AndroidRuntime: Shutting down VM
+--------- beginning of crash
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: FATAL EXCEPTION: main
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: Process: com.boi.ua.android, PID: 15660
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: java.lang.UnsatisfiedLinkError: No implementation found for byte[] o.n.onPostCreate(int, int) (tried Java_o_n_onPostCreate and Java_o_n_onPostCreate__II) - is the library loaded, e.g. System.loadLibrary?
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at o.n.onPostCreate(Native Method)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at o.n.onMenuOpened(:334)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at o.n.onPostResume(:413)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at o.releaseGlows.getApplicationContext(Unknown Source:249)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.google.android.gms.common.wrappers.Wrappers.zza(:1)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.google.android.gms.common.wrappers.Wrappers.packageManager(:1)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.google.android.gms.ads.internal.client.zzek.attachInfo(:1)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.google.android.gms.ads.MobileAdsInitProvider.attachInfo(:1)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread.installProvider(ActivityThread.java:7765)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread.installContentProviders(ActivityThread.java:7276)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6983)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2236)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+10-25 21:18:26.657 15660 15660 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+10-25 21:18:26.667  3759  3759 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+10-25 21:18:26.667  3759  3759 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+10-25 21:18:26.685   551  1406 W ActivityTaskManager:   Force finishing activity com.boi.ua.android/com.boi.ua.MainActivity
+10-25 21:18:26.711 15660 15660 I Process : Sending signal. PID: 15660 SIG: 9
+10-25 21:18:26.714   551 15677 I DropBoxManagerService: add tag=data_app_crash isTagEnabled=true flags=0x2
+10-25 21:18:26.733   344   344 I Zygote  : Process 15660 exited due to signal 9 (Killed)
+10-25 21:18:26.733   551  2070 I ActivityManager: Process com.boi.ua.android (pid 15660) has died: fg  TOP 
+10-25 21:18:26.734   551   601 D DisplayManagerService: Drop pending events for gone uid 10191
+10-25 21:18:26.773   551   600 V WindowManager: Sent Transition #42 createdAt=10-25 21:18:25.955 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=48 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.boi.ua.android/com.boi.ua.MainActivity } baseActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} topActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} origActivity=null realActivity=ComponentInfo{com.boi.ua.android/com.boi.ua.MainActivity} numActivities=1 lastActiveTime=7664795 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{9599a7b Task{3cd34d0 #48 type=standard A=10191:com.boi.ua.android}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{e5a7098 com.boi.ua.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-25 21:18:26.773   551   600 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+10-25 21:18:26.773   551   600 V WindowManager:     info={id=42 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{e9adbe5 Task{3092457 #47 type=standard A=1000:com.android.settings.root}}} m=CHANGE f=MOVE_TO_TOP leash=Surface(name=Task=47)/@0xe474f sb=Rect(0, 0 - 1080, 2280) eb=Rect(0, 0 - 1080, 2280) d=0}]}
+10-25 21:18:26.794   810   870 V WindowManagerShell: onTransitionReady android.os.BinderProxy@ab649e3: {id=42 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@d5d5bd1} m=CHANGE f=MOVE_TO_TOP leash=Surface(name=Task=47)/@0xef1125b sb=Rect(0, 0 - 1080, 2280) eb=Rect(0, 0 - 1080, 2280) d=0}]}
+10-25 21:18:26.809   810   870 V WindowManagerShell: Playing animation for (#42)android.os.BinderProxy@ab649e3@0
+10-25 21:18:26.820   810   870 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@4cda9ca
+10-25 21:18:26.821   810   870 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@189073b
+10-25 21:18:26.821   810   870 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@a2e3e58
+10-25 21:18:26.821   810   870 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@cbf8bb1
+10-25 21:18:26.821   810   870 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+10-25 21:18:26.821   810   870 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@6049896
+10-25 21:18:26.830   810   870 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@76dc17
+10-25 21:18:26.830   810   870 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@a74e804
+10-25 21:18:26.838   810   870 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=42 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@d5d5bd1} m=CHANGE f=MOVE_TO_TOP leash=Surface(name=Task=47)/@0xef1125b sb=Rect(0, 0 - 1080, 2280) eb=Rect(0, 0 - 1080, 2280) d=0}]}
+10-25 21:18:26.840   810   870 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@5340df3, appThread = android.app.IApplicationThread$Stub$Proxy@5c2ab0, debugName = LauncherToDream }}
+10-25 21:18:26.841   810   870 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@5ffd29, appThread = android.app.IApplicationThread$Stub$Proxy@eb778ae, debugName = QuickstepLaunchHome }}
+10-25 21:18:26.841   810   870 V WindowManagerShell:  Delegate animation for #42 to null
+10-25 21:18:26.841   810   870 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@99031ed
+10-25 21:18:26.841   810   870 V WindowManagerShell: start default transition animation, info = {id=42 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@d5d5bd1} m=CHANGE f=MOVE_TO_TOP leash=Surface(name=Task=47)/@0xef1125b sb=Rect(0, 0 - 1080, 2280) eb=Rect(0, 0 - 1080, 2280) d=0}]}
+10-25 21:18:26.854 13738 14065 W SQLiteLog: (28) double-quoted string literal: ""
+10-25 21:18:26.856   810   870 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#42)android.os.BinderProxy@ab649e3@0
+10-25 21:18:26.866   551   600 V WindowManager: Finish Transition #42: created at 10-25 21:18:25.955 collect-started=0.554ms request-sent=151.176ms started=390.144ms ready=810.382ms sent=814.66ms finished=904.061ms
+10-25 21:18:26.874   810   870 V WindowManagerShell: Track 0 became idle
+10-25 21:18:26.874   810   870 V WindowManagerShell: All active transition animations finished
+10-25 21:18:26.874   810   870 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@99031ed
+10-25 21:18:26.900   810   870 V WindowManagerShell: Track 0 became idle
+10-25 21:18:26.900   810   870 V WindowManagerShell: All active transition animations finished
+10-25 21:18:26.985 15540 15624 I Finsky:background: [78] IV2: IQv2 is disabled. Recovering all active installs: []
+10-25 21:18:27.163 12759 12846 I Finsky  : [76] WM::SCH: Logging work initialize for 12-1
+10-25 21:18:27.192 12759 12846 I Finsky  : [76] WM::SCH: Logging work initialize for 12-1
+10-25 21:18:27.206   551   603 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{6386c93 u0 com.boi.ua.android/com.boi.ua.MainActivity t-1 f}}
+10-25 21:18:27.219   810   933 D EGL_emulation: app_time_stats: avg=13912.41ms min=13912.41ms max=13912.41ms count=1
+10-25 21:18:27.351   551   601 D DisplayManagerService: Drop pending events for gone uid 10163
+10-25 21:18:27.367   344   344 I Zygote  : Process 13847 exited due to signal 9 (Killed)
+10-25 21:18:27.375   551   614 I libprocessgroup: Successfully killed process cgroup uid 10114 pid 13852 in 0ms
+10-25 21:18:27.378 15540 15621 D CompatibilityChangeReporter: Compat change id reported: 183155436; UID 10131; state: ENABLED
+10-25 21:18:27.422 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 12-1, CT: 1792943305169, Constraints: [{ L: 15000, D: 86400000, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:27.437   551   864 D ConnectivityService: requestNetwork for uid/pid:10131/15540 activeRequest: null callbackRequest: 369 [NetworkRequest [ REQUEST id=370, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+10-25 21:18:27.439 12759 12857 I Finsky  : [80] SCH: Scheduling 0 system job(s)
+10-25 21:18:27.442  1097  1111 W System  : A resource failed to call release. 
+10-25 21:18:27.442  1097  1111 W System  : A resource failed to call release. 
+10-25 21:18:27.442  1097  1111 W System  : A resource failed to call release. 
+10-25 21:18:27.458  1439  1439 I AiAiEcho: AppFetcherImpl onPackageChanged com.boi.ua.android.
+10-25 21:18:27.478   551   730 D ConnectivityService: NetReassign [370 : null → 101] [c 7] [a 32] [i 1]
+10-25 21:18:27.487   551   723 D WifiNetworkFactory: got request NetworkRequest [ REQUEST id=370, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.488   551   723 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=370, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.488   344   344 I Zygote  : Process 13852 exited due to signal 9 (Killed)
+10-25 21:18:27.489   551   601 D DisplayManagerService: Drop pending events for gone uid 10114
+10-25 21:18:27.489   551   723 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=370, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.488 12759 12854 I Finsky  : [78] SCH: Scheduling phonesky job Id: 12-1, CT: 1792943305041, Constraints: [{ L: 15000, D: 86400000, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-25 21:18:27.490   551   723 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=370, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.497 15540 15622 I Finsky:background: [76] Device is eligible for platform Cronet and will attempt to use it.
+10-25 21:18:27.499   551   614 I libprocessgroup: Successfully killed process cgroup uid 10191 pid 15660 in 0ms
+10-25 21:18:27.506 12759 12860 I Finsky  : [81] SCH: Scheduling 0 system job(s)
+10-25 21:18:27.514 12759 12860 I Finsky  : [81] [ContentSync] finished, scheduled=true
+10-25 21:18:27.514 12759 12857 I Finsky  : [80] [ContentSync] finished, scheduled=true
+10-25 21:18:27.519 15540 15626 I Finsky:background: [80] IQ: start evaluating install requests.
+10-25 21:18:27.542 15540 15626 I Finsky:background: [80] IQ: no jobs active. Skipping
+10-25 21:18:27.634  1439  6433 I AiAiEcho: Settings changed for uri: content://settings/secure/device_state_rotation_lock
+10-25 21:18:27.643  1439 15686 I AiAiEcho: AppIndexer Package:[com.boi.ua.android] UserProfile:[0] Enabled:[true].
+10-25 21:18:27.649  1439 15686 I AiAiEcho: AppFetcherImplV2 updateApps package:[com.boi.ua.android], userId:[0], reason:[package is updated.].
+10-25 21:18:27.652   810   810 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+10-25 21:18:27.670  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.670  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.670  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.670  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.671  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.692  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-25 21:18:27.692  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+10-25 21:18:27.699   810   810 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+10-25 21:18:27.699  1439  6433 I AiAiEcho: Settings changed for uri: content://settings/secure/device_state_rotation_lock
+10-25 21:18:27.703   810   810 D SsMediaDataProvider: Forwarding Smartspace updates []
+10-25 21:18:27.707  1439  6433 I AiAiEcho: Settings changed for uri: content://settings/secure/device_state_rotation_lock
+10-25 21:18:27.710  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.712  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.713  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:18:27.713  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:18:27.713  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:18:27.713  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:18:27.716  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-25 21:18:27.720   810   810 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+10-25 21:18:27.721  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+10-25 21:18:27.721  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+10-25 21:18:27.722  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-25 21:18:27.722  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+10-25 21:18:27.723  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+10-25 21:18:27.723  3759 15682 I DropBoxUtil: (REDACTED) Reading dropbox entry with tag %s and timestamp %d
+10-25 21:18:27.735   810   810 D SsMediaDataProvider: Forwarding Smartspace updates []
+10-25 21:18:27.735   810   810 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+10-25 21:18:27.735   810   810 D SsMediaDataProvider: Forwarding Smartspace updates []
+10-25 21:18:27.751 15540 15683 I Finsky:background: [88] IQ: Pruning inactive install requests
+10-25 21:18:27.905   551  2145 D ConnectivityService: requestNetwork for uid/pid:10131/15540 activeRequest: null callbackRequest: 371 [NetworkRequest [ REQUEST id=372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+10-25 21:18:27.914 12759 12785 W android.vending: Reducing the number of considered missed Gc histogram windows from 308 to 100
+10-25 21:18:27.939  1439  1463 I ogle.android.as: Background concurrent copying GC freed 73234(3386KB) AllocSpace objects, 32(512KB) LOS objects, 49% free, 5975KB/11MB, paused 33.480ms,631us total 12.525s
+10-25 21:18:27.939  1439  1463 W ogle.android.as: Reducing the number of considered missed Gc histogram windows from 298 to 100
+10-25 21:18:27.949   551   723 D WifiNetworkFactory: got request NetworkRequest [ REQUEST id=372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.955   551   723 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.955   551   730 D ConnectivityService: NetReassign [372 : null → 101] [c 3] [a 7] [i 33]
+10-25 21:18:27.956   551   723 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.956   551   723 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10131 RequestorUid: 10131 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]
+10-25 21:18:27.956   551   730 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+10-25 21:18:28.050 15540 15626 I Finsky:background: [80] IQ: 0 scheduled install statuses found to proceed. 
+10-25 21:18:28.111 15540 15683 I Finsky:background: [88] Resetting scheduler db
+10-25 21:18:28.116 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-21, CT: 1792916045352, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.116 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-22, CT: 1792916045352, Constraints: [{ L: 40554649, D: 51354649, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.116 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-23, CT: 1792916045352, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.117 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 47-15, CT: 1792914904667, Constraints: [{ L: 3600000, D: 21563376, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_NONE, B: BATTERY_ANY }]
+10-25 21:18:28.135 15540 15626 I Finsky:background: [80] SCH: Scheduling 0 system job(s)
+10-25 21:18:28.172 15540 15690 I Finsky:background: [93] SCH: Canceling job 3-21
+10-25 21:18:28.183 15540 15690 I Finsky:background: [93] WM::SCH: Logging work end for 3-21
+10-25 21:18:28.218 15540 15619 I Finsky:background: [73] SCH: Scheduling phonesky job Id: 3-23, CT: 1792916045352, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.234 15540 15620 I Finsky:background: [74] SCH: Scheduling 1 system job(s)
+10-25 21:18:28.245 15540 15620 D CompatibilityChangeReporter: Compat change id reported: 194532703; UID 10131; state: ENABLED
+10-25 21:18:28.246 15540 15620 D CompatibilityChangeReporter: Compat change id reported: 253665015; UID 10131; state: ENABLED
+10-25 21:18:28.247 15540 15620 I Finsky:background: [74] SCH: Scheduling system job Id: 10234, L: 0, D: 59137117, C: true, I: true, N: 2
+10-25 21:18:28.248   551  2145 D CompatibilityChangeReporter: Compat change id reported: 271850009; UID 10131; state: ENABLED
+10-25 21:18:28.248   551  2145 D CompatibilityChangeReporter: Compat change id reported: 253665015; UID 10131; state: ENABLED
+10-25 21:18:28.248   551  2145 D CompatibilityChangeReporter: Compat change id reported: 194532703; UID 10131; state: ENABLED
+10-25 21:18:28.299 15540 15690 I Finsky:background: [93] SCH: Canceling job 3-22
+10-25 21:18:28.300 15540 15690 I Finsky:background: [93] WM::SCH: Logging work end for 3-22
+10-25 21:18:28.303 15540 15619 I Finsky:background: [73] SCH: no pending jobs to schedule.
+10-25 21:18:28.326 15540 15622 I cr_CronetLibraryLoader: Cronet version: 114.0.5735.84, arch: x86_64
+10-25 21:18:28.339 15540 15690 I Finsky:background: [93] SCH: Canceling job 3-23
+10-25 21:18:28.340 15540 15690 I Finsky:background: [93] WM::SCH: Logging work end for 3-23
+10-25 21:18:28.358 15540 15620 I Finsky:background: [74] SCH: no pending jobs to schedule.
+10-25 21:18:28.400 15540 15683 I Finsky:background: [88] IQ: Creating job 24, for (REQ_CHARGING, REQ_DEVICE_IDLE, REQ_GEARHEAD_PROJECTION_OFF, NETWORK=UNMETERED, PROVISIONING_STATE=PROVISIONED, BACKUP_MANAGER_STATE=BACKUP_READY, PROCESS_IMPORTANCE_THRESHOLD=125, REQ_CAR_KEY_NOT_IN_USE=true)
+10-25 21:18:28.408 15540 15622 I Finsky:background: [76] CronetEngine is present. Using Cronet for the networking stack.
+10-25 21:18:28.469 15540 15683 I Finsky:background: [88] IQ: Creating job 25, for (REQ_DEVICE_IDLE, REQ_GEARHEAD_PROJECTION_OFF, MIN_BATTERY=20, SHOULD_APPLY_BUDGET=true, NETWORK=UNMETERED, PROVISIONING_STATE=PROVISIONED, BACKUP_MANAGER_STATE=BACKUP_READY, TIME=[2026-10-25T19:30:00Z-2026-10-25T22:30:00Z])
+10-25 21:18:28.469 15540 15683 I Finsky:background: [88] IQ: Creating job 26, for (REQ_CHARGING, REQ_DEVICE_IDLE, REQ_GEARHEAD_PROJECTION_OFF, NETWORK=UNMETERED, PROVISIONING_STATE=PROVISIONED, BACKUP_MANAGER_STATE=BACKUP_READY)
+10-25 21:18:28.469 15540 15683 I Finsky:background: [88] IQ: Bulk scheduling created jobs
+10-25 21:18:28.517 15540 15683 I Finsky:background: [88] SCH: Received scheduling request: Id: 3-24, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.521 15540 15683 I Finsky:background: [88] SCH: Received scheduling request: Id: 3-25, Constraints: [{ L: 13291531, D: 24091531, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.521 15540 15683 I Finsky:background: [88] SCH: Received scheduling request: Id: 3-26, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:28.562 15540 15649 D TrafficStats: tagSocket(107) with statsTag=0xffffffff, statsUid=-1
+10-25 21:18:28.570 15540 15626 I Finsky:background: [80] SSM: Start staged session task with 0 tracked staged sessions
+10-25 21:18:28.591 15540 15622 I Finsky:background: [76] Subscription detail: DataSubscriptionInfo{groupIdLevel1=null, serviceProviderName=[Zr1R7g28S8p7iucp_gnNJJtsRl-pgO3Y6eIkCh24Iy0], simCarrierId=1}
+10-25 21:18:28.600 15540 15540 I Finsky:background: [2] onSubscriptionsChanged
+10-25 21:18:28.607 15540 15622 I Finsky:background: [76] PlayInstallAPI: Registering Play install service listener.
+10-25 21:18:29.589 15540 15610 I Finsky:background: [66] WM::SCH: Logging work initialize for 3-24
+10-25 21:18:29.589 15540 15610 I Finsky:background: [66] WM::SCH: Logging work initialize for 3-25
+10-25 21:18:29.589 15540 15610 I Finsky:background: [66] WM::SCH: Logging work initialize for 3-26
+10-25 21:18:29.604 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-24, CT: 1792943308517, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:29.604 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-25, CT: 1792943308521, Constraints: [{ L: 13291531, D: 24091531, C: CHARGING_NONE, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:29.604 15540 15626 I Finsky:background: [80] SCH: Scheduling phonesky job Id: 3-26, CT: 1792943308521, Constraints: [{ L: 0, D: 86400000, C: CHARGING_REQUIRED, I: IDLE_REQUIRED, N: NET_UNMETERED, B: BATTERY_ANY }]
+10-25 21:18:29.608   551  1557 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+10-25 21:18:29.610 15540 15622 I Finsky:background: [76] SCH: Scheduling 0 system job(s)
+10-25 21:18:30.268   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:31.015 13738 13738 W Choreographer: Frame time is 0.42181 ms in the future!  Check that graphics HAL is generating vsync timestamps using the correct timebase.
+10-25 21:18:31.661   551  1591 D CompatibilityChangeReporter: Compat change id reported: 261072174; UID 10131; state: ENABLED
+10-25 21:18:31.662   551  1591 I ActivityManager: Killing 13891:com.google.android.cellbroadcastreceiver/u0a177 (adj 975): empty #17
+10-25 21:18:31.670   551  1591 W ProcessStats: Tracking association SourceState{21e694a com.google.android.gms/10129 BTop #13571} whose proc state 2 is better than process ProcessState{9dd91f0 com.google.android.adservices.api/10171 pkg=com.google.android.adservices.api} proc state 14 (1364 skipped)
+10-25 21:18:31.672   551   614 I libprocessgroup: Successfully killed process cgroup uid 10177 pid 13891 in 1ms
+10-25 21:18:31.700 15540 15618 I Finsky:background: [72] playLoggingServerUrl: https://play.googleapis.com/play/log
+10-25 21:18:31.700 15540 15618 I Finsky:background: [72] playLoggingServerTimestampUrl: https://play.googleapis.com/play/log/timestamp
+10-25 21:18:31.782 13738 13738 W Choreographer: Frame time is 0.008644 ms in the future!  Check that graphics HAL is generating vsync timestamps using the correct timebase.
+10-25 21:18:31.885   551   601 D DisplayManagerService: Drop pending events for gone uid 10177
+10-25 21:18:31.889   344   344 I Zygote  : Process 13891 exited due to signal 9 (Killed)
+10-25 21:18:32.032 13738 13738 W Choreographer: Frame time is 0.080568 ms in the future!  Check that graphics HAL is generating vsync timestamps using the correct timebase.
+10-25 21:18:32.098 13738 13738 W Choreographer: Frame time is 0.094481 ms in the future!  Check that graphics HAL is generating vsync timestamps using the correct timebase.
+10-25 21:18:32.731  3759  3771 I gle.android.gms: Background concurrent copying GC freed 342525(16MB) AllocSpace objects, 42(4776KB) LOS objects, 40% free, 35MB/59MB, paused 294us,35us total 17.439s
+10-25 21:18:32.731  3759  3771 W gle.android.gms: Reducing the number of considered missed Gc histogram windows from 162 to 100
+10-25 21:18:33.240   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:33.657   810   810 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+10-25 21:18:35.334 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:35.335 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:35.335 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:35.335 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:35.336 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.336 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.338 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:35.338 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:35.339 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:35.339 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:35.341 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.341 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.342 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.342 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.343 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:35.343 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:35.344 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:35.344 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:35.344 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.345 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:35.346 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:35.346 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:35.346 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:36.792   551   678 D ActivityManager: freezing 13062 com.google.process.gservices
+10-25 21:18:38.203   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:38.726   551   678 D ActivityManager: freezing 11225 com.google.android.permissioncontroller
+10-25 21:18:43.260   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:43.269   810   933 D EGL_emulation: app_time_stats: avg=16050.35ms min=16050.35ms max=16050.35ms count=1
+10-25 21:18:45.431 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:45.431 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:45.432 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:45.432 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:45.434 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.434 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.436 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:45.436 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:45.437 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:45.437 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:45.438 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.438 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.439 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.439 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.441 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:45.441 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:45.441 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:45.441 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:45.443 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.443 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:45.444 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:45.444 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:45.445 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:46.067   551   668 W ProcessStats: Tracking association SourceState{5edd6b1 com.google.android.gms.unstable/10129 BTop #13581} whose proc state 2 is better than process ProcessState{d210b14 com.google.android.gms/10129 pkg=com.google.android.gms} proc state 9 (138 skipped)
+10-25 21:18:46.140   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:53.236   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:18:54.334   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:18:55.573 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:55.573 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:18:55.574 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:55.574 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:18:55.575 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.576 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.578 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:55.578 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:18:55.579 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:55.579 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:18:55.580 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.580 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.581 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.581 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.583 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:55.583 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:18:55.584 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:55.584 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:18:55.585 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.585 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:18:55.586 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:55.586 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:18:55.587 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:18:56.118   551   678 D ActivityManager: freezing 15551 com.android.keychain
+10-25 21:19:00.022  1439  1778 I AiAiEcho: Predicting[0]: 
+10-25 21:19:00.023  1439  1778 I AiAiEcho: EchoTargets: 
+10-25 21:19:00.023  1439  1778 I AiAiEcho: Filtered by AiAi flag check: 
+10-25 21:19:00.023  1439  1778 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-25 21:19:00.026  1439  1778 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-25 21:19:00.044   810   810 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+10-25 21:19:00.055   810   933 D EGL_emulation: app_time_stats: avg=16785.20ms min=16785.20ms max=16785.20ms count=1
+10-25 21:19:02.268   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:19:02.533   551  1406 D WifiNl80211Manager: Scan result ready event
+10-25 21:19:02.534   551  1406 D WifiNative: Scan result ready event
+10-25 21:19:03.236   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:19:05.454 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:05.454 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:05.455 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:05.455 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:05.457 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.457 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.459 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:05.459 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:05.459 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:05.460 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:05.461 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.461 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.463 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.463 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.464 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:05.464 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:05.465 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:05.465 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:05.466 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.466 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:05.467 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:05.467 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:05.468 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:19:10.202   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:19:13.255   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:19:15.385 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:15.385 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:15.386 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:15.386 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:15.387 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.387 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.389 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:15.389 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:15.389 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:15.389 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:15.391 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.391 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.392 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.392 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.393 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:15.393 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:15.394 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:15.394 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:15.394 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.395 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:15.395 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:15.396 15520 15526 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:15.396 15520 15526 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:19:18.140   798   798 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+10-25 21:19:23.219 15540 15609 I Finsky:background: [65] Stats for Executor: bgExecutor ydw@79c30c0[Running, pool size = 4, active threads = 0, queued tasks = 0, completed tasks = 32]
+10-25 21:19:23.237   810   810 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-25 21:19:23.797 15540 15609 I Finsky:background: [65] Stats for Executor: LightweightExecutor ydw@8db71f9[Running, pool size = 2, active threads = 0, queued tasks = 0, completed tasks = 12]
+10-25 21:19:25.174 15540 15609 I Finsky:background: [65] Stats for Executor: BlockingExecutor ydw@1bf953e[Running, pool size = 3, active threads = 0, queued tasks = 0, completed tasks = 6]
+10-25 21:19:25.538 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:25.538 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000004/DynamiteModulesC.dm': No such file or directory
+10-25 21:19:25.539 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:25.539 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.dm': No such file or directory
+10-25 21:19:25.540 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.540 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-MlkitBarcodeUi.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.542 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:25.542 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+10-25 21:19:25.542 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:25.543 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.dm': No such file or directory
+10-25 21:19:25.544 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.544 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-MlkitOcrCommon.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.545 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.545 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000c/dl-IdentityCredentialsPlatform.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.546 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:25.546 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-TfliteDynamiteDynamite.integ_262730502100800.dm': No such file or directory
+10-25 21:19:25.547 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:25.547 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000000/AdsDynamite.dm': No such file or directory
+10-25 21:19:25.548 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.548 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-Appsearch.optional_263933100800.dm': No such file or directory
+10-25 21:19:25.549 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:25.549 15520 15528 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-VisionOcr.optional_263933100000.dm': No such file or directory
+10-25 21:19:25.550 15520 15528 W artd    : Could not get dex checksums for location /data/app/~~WNpjD-RJ_QZiqgVA7rpSEA==/com.android.vending-wZu38kvFguq01xP50_433Q==/base.apk, fd=-1
+10-25 21:19:25.782  3759  3759 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-25 21:19:25.783   551  1406 W ProcessStats: Tracking association SourceState{21e694a com.google.android.gms/10129 BTop #13583} whose proc state 2 is better than process ProcessState{9dd91f0 com.google.android.adservices.api/10171 pkg=com.google.android.adservices.api} proc state 14 (34 skipped)

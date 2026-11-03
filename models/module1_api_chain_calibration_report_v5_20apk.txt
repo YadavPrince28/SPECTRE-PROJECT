@@ -1,0 +1,50 @@
+====================================================================================================
+SPECTRE MODULE 1 — API-CHAIN V5 CALIBRATION REPORT
+====================================================================================================
+
+METHOD
+- Evidence extraction: intra-procedural register-taint + conservative control-sequence evidence
+- Numeric score: 100 * calibrated P(MALICIOUS | evidence)
+- Training/development: 20 APKs = 10 malicious + 10 benign (exploratory quick run)
+- External benign safety holdout: not evaluated in this quick run
+- Model: L2 logistic regression; C selected by 5-fold stratified CV
+- Probability calibration: sigmoid / Platt-style 5-fold CV
+
+PRIMARY 20 OOF PERFORMANCE
+ROC-AUC         : 0.6900
+Average Precision: 0.7918
+Brier Score     : 0.203876
+Log Loss        : 0.592333
+
+OOF THRESHOLDS
+Youden J                    : score=67.26, TPR=50.00%, FPR=0.00%
+Best F1                     : score=45.84, TPR=80.00%, FPR=50.00%
+Best TPR with FPR<=5%       : score=67.26, TPR=50.00%, FPR=0.00%
+
+LEGITIMATE BANKING HOLDOUT
+Not used in this 20-APK quick calibration run.
+
+TOP LEARNED BASE-MODEL FEATURES
+source_type_count                          coefficient=-0.161659
+network_sink_count                         coefficient=+0.026224
+rule_SMS_MESSAGE_TO_NETWORK                coefficient=+0.000000
+rule_SMS_PROVIDER_TO_NETWORK               coefficient=+0.000000
+rule_TELEPHONY_ID_TO_NETWORK               coefficient=+0.000000
+rule_CLIPBOARD_TO_NETWORK                  coefficient=+0.000000
+rule_ACCESSIBILITY_TO_NETWORK              coefficient=+0.000000
+rule_ACCESSIBILITY_TO_OVERLAY              coefficient=+0.000000
+rule_CREDENTIAL_TO_ACCESSIBILITY_TO_NETWORK coefficient=+0.000000
+rule_CREDENTIAL_UI_TO_OVERLAY              coefficient=+0.000000
+rule_SMS_TO_ENCODING_TO_NETWORK            coefficient=+0.000000
+rule_SMS_TO_CRYPTO_TO_NETWORK              coefficient=+0.000000
+rule_TELEPHONY_TO_ENCODING_TO_NETWORK      coefficient=+0.000000
+rule_CLIPBOARD_TO_ENCODING_TO_NETWORK      coefficient=+0.000000
+rule_REFLECTION_DYNAMIC_CODE_TO_NETWORK    coefficient=+0.000000
+
+FILES
+Model   : D:\Spectre_BOI_project\SPECTRE\models\module1_api_chain_calibrator_v5_20apk.joblib
+Metadata: D:\Spectre_BOI_project\SPECTRE\models\module1_api_chain_calibrator_v5_20apk.json
+Features: D:\Spectre_BOI_project\SPECTRE\models\module1_api_chain_evidence_v5_20apk.csv
+OOF     : D:\Spectre_BOI_project\SPECTRE\models\module1_api_chain_oof_v5_20apk.csv
+Banking : D:\Spectre_BOI_project\SPECTRE\models\module1_api_chain_banking_holdout_v5_20apk.csv
+====================================================================================================

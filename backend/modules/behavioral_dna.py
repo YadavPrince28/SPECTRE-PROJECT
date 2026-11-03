@@ -1,36 +1,4 @@
-"""
-SPECTRE MODULE 2 — BEHAVIORAL DNA
-=================================
 
-Production implementation of the validated V9.1 scorer.
-
-Frozen behavioral score
------------------------
-    Behavioral Similarity
-        = 0.90 * Class Transition-IDF
-        + 0.10 * Package Markov
-
-Pipeline-facing score
----------------------
-    behavioral_score = Behavioral Similarity * 100
-
-The module reports:
-    - closest behavioral family
-    - behavioral similarity
-    - Class Transition-IDF score
-    - Package Markov score
-    - Top-1 margin
-    - extraction telemetry
-    - leakage / true-LOO metadata
-
-It does NOT claim:
-    - definitive malware attribution
-    - malware probability
-
-Expected public entry point
----------------------------
-    analyze_behavioral_dna(apk_path: str) -> dict
-"""
 
 from __future__ import annotations
 
@@ -55,7 +23,11 @@ from androguard.util import set_log
 # ANDROGUARD LOGGING
 # =============================================================================
 
-set_log("WARNING")
+try:
+    set_log("WARNING")
+except (ValueError, AttributeError, TypeError):
+    # Androguard may already have no loguru handler in this process.
+    pass
 
 
 # =============================================================================

@@ -1,0 +1,73 @@
+{
+  "schema_version": "spectre-dynamic-1.0",
+  "started_utc": "2026-10-25T15:48:03.699792+00:00",
+  "apk": {
+    "path": "D:\\Spectre_BOI_project\\SPECTRE\\data\\validation\\banking_apks\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7.apk",
+    "sha256": "8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7"
+  },
+  "device": {
+    "serial": "emulator-5554",
+    "android_sdk": "34",
+    "abi": "x86_64",
+    "model": "sdk_gphone64_x86_64"
+  },
+  "execution_status": "crashed",
+  "crash_detected": true,
+  "runtime_indicators": [
+    {
+      "type": "fatal_exception",
+      "count": 1,
+      "samples": [
+        "10-25 21:18:26.657 15660 15660 E AndroidRuntime: FATAL EXCEPTION: main"
+      ]
+    },
+    {
+      "type": "process_died",
+      "count": 1,
+      "samples": [
+        "10-25 21:18:26.733   551  2070 I ActivityManager: Process com.boi.ua.android (pid 15660) has died: fg  TOP "
+      ]
+    },
+    {
+      "type": "unsatisfied_link",
+      "count": 1,
+      "samples": [
+        "10-25 21:18:26.657 15660 15660 E AndroidRuntime: java.lang.UnsatisfiedLinkError: No implementation found for byte[] o.n.onPostCreate(int, int) (tried Java_o_n_onPostCreate and Java_o_n_onPostCreate__II) - is the library loaded, e.g. System.loadLibrary?"
+      ]
+    }
+  ],
+  "network": {
+    "capture_status": "not_configured",
+    "capture_method": null,
+    "flows_file": null,
+    "note": "ADB diagnostics are not packet capture; optional mitmproxy records only proxied flows."
+  },
+  "coverage": {
+    "duration_seconds": 60,
+    "launch_attempted": true
+  },
+  "risk": {
+    "dynamic_score": null,
+    "confidence": "insufficient_evidence"
+  },
+  "artifacts": {
+    "logcat": "D:\\Spectre_BOI_project\\SPECTRE\\reports\\dynamic\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7_20261025T154803Z_logcat.txt",
+    "connectivity": "D:\\Spectre_BOI_project\\SPECTRE\\reports\\dynamic\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7_20261025T154803Z_connectivity.txt",
+    "netstats": "D:\\Spectre_BOI_project\\SPECTRE\\reports\\dynamic\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7_20261025T154803Z_netstats.txt",
+    "package_dump": "D:\\Spectre_BOI_project\\SPECTRE\\reports\\dynamic\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7_20261025T154803Z_package_dump.txt",
+    "processes": "D:\\Spectre_BOI_project\\SPECTRE\\reports\\dynamic\\8eef420294d64216e8f2e74a59a3ab641bb36587a7f4a49c779006caae25a0c7_20261025T154803Z_processes.txt"
+  },
+  "errors": [],
+  "package": "com.boi.ua.android",
+  "install": {
+    "returncode": 0,
+    "stdout": "Performing Streamed Install\nSuccess\n",
+    "stderr": ""
+  },
+  "launch": {
+    "returncode": 0,
+    "stdout": "  bash arg: -p\n  bash arg: com.boi.ua.android\n  bash arg: -c\n  bash arg: android.intent.category.LAUNCHER\n  bash arg: 1\nEvents injected: 1\n## Network stats: elapsed time=430ms (0ms mobile, 0ms wifi, 430ms not connected)\n",
+    "stderr": "args: [-p, com.boi.ua.android, -c, android.intent.category.LAUNCHER, 1]\n arg: \"-p\"\n arg: \"com.boi.ua.android\"\n arg: \"-c\"\n arg: \"android.intent.category.LAUNCHER\"\n arg: \"1\"\ndata=\"com.boi.ua.android\"\ndata=\"android.intent.category.LAUNCHER\"\n"
+  },
+  "finished_utc": "2026-10-25T15:49:29.725938+00:00"
+}

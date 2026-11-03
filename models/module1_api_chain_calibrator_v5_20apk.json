@@ -1,0 +1,174 @@
+{
+  "model_path": "D:\\Spectre_BOI_project\\SPECTRE\\models\\module1_api_chain_calibrator_v5_20apk.joblib",
+  "feature_count": 31,
+  "feature_names": [
+    "rule_SMS_MESSAGE_TO_NETWORK",
+    "rule_SMS_PROVIDER_TO_NETWORK",
+    "rule_TELEPHONY_ID_TO_NETWORK",
+    "rule_CLIPBOARD_TO_NETWORK",
+    "rule_ACCESSIBILITY_TO_NETWORK",
+    "rule_ACCESSIBILITY_TO_OVERLAY",
+    "rule_CREDENTIAL_TO_ACCESSIBILITY_TO_NETWORK",
+    "rule_CREDENTIAL_UI_TO_OVERLAY",
+    "rule_SMS_TO_ENCODING_TO_NETWORK",
+    "rule_SMS_TO_CRYPTO_TO_NETWORK",
+    "rule_TELEPHONY_TO_ENCODING_TO_NETWORK",
+    "rule_CLIPBOARD_TO_ENCODING_TO_NETWORK",
+    "rule_REFLECTION_DYNAMIC_CODE_TO_NETWORK",
+    "rule_CONTACTS_TO_NETWORK",
+    "rule_DYNAMIC_CODE_TO_NETWORK",
+    "rule_PROCESS_TO_NETWORK",
+    "dataflow_finding_count",
+    "ordered_control_finding_count",
+    "contextual_finding_count",
+    "strong_finding_count",
+    "medium_finding_count",
+    "distinct_rule_count",
+    "source_type_count",
+    "source_sink_method_count",
+    "tainted_network_sink_count",
+    "network_sink_count",
+    "tainted_transform_count",
+    "app_owner_finding_count",
+    "unknown_owner_finding_count",
+    "known_library_finding_count",
+    "nonframework_unknown_ratio"
+  ],
+  "nonconstant_features_on_primary": [
+    "source_type_count",
+    "network_sink_count"
+  ],
+  "selected_C": 0.03,
+  "inner_grid_cv_auc": 0.75,
+  "nested_oof_folds": [
+    {
+      "fold": 1,
+      "C": 0.1,
+      "grid_cv_auc": 0.65,
+      "train_n": 16,
+      "test_n": 4
+    },
+    {
+      "fold": 2,
+      "C": 30.0,
+      "grid_cv_auc": 0.85,
+      "train_n": 16,
+      "test_n": 4
+    },
+    {
+      "fold": 3,
+      "C": 0.01,
+      "grid_cv_auc": 0.9,
+      "train_n": 16,
+      "test_n": 4
+    },
+    {
+      "fold": 4,
+      "C": 0.1,
+      "grid_cv_auc": 0.65,
+      "train_n": 16,
+      "test_n": 4
+    },
+    {
+      "fold": 5,
+      "C": 30.0,
+      "grid_cv_auc": 0.75,
+      "train_n": 16,
+      "test_n": 4
+    }
+  ],
+  "oof_metrics": {
+    "roc_auc": 0.6900000000000001,
+    "average_precision": 0.7918414918414918,
+    "brier_score": 0.20387597954322959,
+    "log_loss": 0.5923328306654608
+  },
+  "oof_thresholds": {
+    "youden": {
+      "threshold": 0.6726424569780411,
+      "tp": 5,
+      "fp": 0,
+      "tn": 10,
+      "fn": 5,
+      "tpr": 0.5,
+      "fpr": 0.0,
+      "balanced_accuracy": 0.75,
+      "f1": 0.6666666666666666,
+      "precision": 1.0,
+      "recall": 0.5,
+      "youden_j": 0.5
+    },
+    "best_f1": {
+      "threshold": 0.45836356641982784,
+      "tp": 8,
+      "fp": 5,
+      "tn": 5,
+      "fn": 2,
+      "tpr": 0.8,
+      "fpr": 0.5,
+      "balanced_accuracy": 0.65,
+      "f1": 0.6956521739130435,
+      "precision": 0.6153846153846154,
+      "recall": 0.8,
+      "youden_j": 0.30000000000000004
+    },
+    "best_tpr_at_fpr_le_5pct": {
+      "threshold": 0.6726424569780411,
+      "tp": 5,
+      "fp": 0,
+      "tn": 10,
+      "fn": 5,
+      "tpr": 0.5,
+      "fpr": 0.0,
+      "balanced_accuracy": 0.75,
+      "f1": 0.6666666666666666,
+      "precision": 1.0,
+      "recall": 0.5,
+      "youden_j": 0.5
+    }
+  },
+  "banking_holdout_threshold_evaluation": {
+    "status": "not_used_in_20apk_quick_run"
+  },
+  "score_definition": "100 * calibrated P(MALICIOUS | API-chain evidence)",
+  "score_semantics": "risk-oriented probability derived from the labeled calibration corpus; not a probability of real-world compromise",
+  "score_distribution": {
+    "primary_final_model": {
+      "malicious": {
+        "n": 10,
+        "min": 0.3005026555509721,
+        "median": 0.5999164753757381,
+        "mean": 0.5891576939749475,
+        "max": 0.919727944781609
+      },
+      "benign": {
+        "n": 10,
+        "min": 0.3279019984144981,
+        "median": 0.34643378778014655,
+        "mean": 0.39791797701605147,
+        "max": 0.6090131142344829
+      }
+    },
+    "primary_oof": {
+      "malicious": {
+        "n": 10,
+        "min": 0.2853970976296786,
+        "median": 0.578879524274595,
+        "mean": 0.5839870024307057,
+        "max": 0.8265559845449306
+      },
+      "benign": {
+        "n": 10,
+        "min": 0.29294490395295425,
+        "median": 0.4369866549217041,
+        "mean": 0.4357113760937893,
+        "max": 0.6084859594446247
+      }
+    },
+    "legitimate_banking_holdout": {
+      "n": 0,
+      "status": "not_used_in_20apk_quick_run"
+    }
+  },
+  "caveat": "This report is based on only 20 primary APKs (10 malicious + 10 benign) for exploratory calibration. It is not a final independent benchmark. The separate 20 legitimate banking apps were intentionally not used in this run."
+}

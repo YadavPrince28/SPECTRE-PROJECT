@@ -1,0 +1,48 @@
+{
+  "samples": 20,
+  "cohorts": {
+    "general": {
+      "n": 10,
+      "score_min": 0.0,
+      "score_max": 0.0,
+      "score_mean": 0.0,
+      "score_median": 0.0,
+      "score_ge_20_pct": 0.0,
+      "score_ge_40_pct": 0.0,
+      "score_ge_60_pct": 0.0,
+      "score_ge_80_pct": 0.0,
+      "verified_banks_with_score_gt_0": 0
+    },
+    "banking": {
+      "n": 10,
+      "score_min": 0.0,
+      "score_max": 0.0,
+      "score_mean": 0.0,
+      "score_median": 0.0,
+      "score_ge_20_pct": 0.0,
+      "score_ge_40_pct": 0.0,
+      "score_ge_60_pct": 0.0,
+      "score_ge_80_pct": 0.0,
+      "verified_banks_with_score_gt_0": 0
+    }
+  },
+  "thresholds": {
+    "20": {
+      "banking_flag_rate_pct": 0.0,
+      "general_flag_rate_pct": 0.0
+    },
+    "40": {
+      "banking_flag_rate_pct": 0.0,
+      "general_flag_rate_pct": 0.0
+    },
+    "60": {
+      "banking_flag_rate_pct": 0.0,
+      "general_flag_rate_pct": 0.0
+    },
+    "80": {
+      "banking_flag_rate_pct": 0.0,
+      "general_flag_rate_pct": 0.0
+    }
+  },
+  "recommendation": "Use the cohort distributions to select a threshold only after expanding the independent validation set."
+}

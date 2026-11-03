@@ -1,6 +1,3 @@
-# pipeline.py — Main analysis orchestrator
-# Week 1: All functions are stubs
-# Week 2-7: Replace stubs with real module calls one by one
 
 import logging
 logging.getLogger('androguard').setLevel(logging.ERROR)
@@ -68,17 +65,38 @@ def calculate_final_score(results: dict) -> dict:
         'network_exfiltration':       0.10,
     }
 
+    dynamic = results.get('dynamic', {})
+    exfiltration_events = dynamic.get('exfiltration_events', [])
+    network_exfiltration_score = min(
+    100,
+    len(exfiltration_events) * 20)
+
     # Placeholder scores until modules are built
     scores = {
-        'malicious_api_chain':   results.get('static',   {}).get('chain_score', 0),
+        'malicious_api_chain':   results.get('static',   {}).get('api_chain_score', 0),
         'dynamic_runtime':       results.get('dynamic',  {}).get('dynamic_risk_score', 0),
         'social_engineering':    results.get('social',   {}).get('social_score', 0),
         'behavioral_family':     results.get('behavioral',{}).get('behavioral_score', 0),
-        'permission_risk':       results.get('static',   {}).get('permission_score', 0),
+        'permission_risk':       results.get('static',   {}).get('permission_risk', 0),
         'genai_severity':        results.get('genai',    {}).get('genai_score', 0),
-        'network_exfiltration':  results.get('dynamic',  {}).get('dynamic_risk_score', 0),
+        'network_exfiltration':  network_exfiltration_score,
     }
+    print("\n[SCORING] COMPONENTS")
 
+    for name, value in scores.items():
+        contribution = value * weights[name]
+
+        print(
+            f"[SCORING] {name:<25} "
+            f"score={value:>8.3f} "
+            f"weight={weights[name]:.2f} "
+            f"contribution={contribution:>8.3f}"
+        )
+
+    print(
+        f"[SCORING] weighted_total="
+        f"{sum(scores[k] * weights[k] for k in weights):.3f}"
+    )
     final = sum(scores[k] * weights[k] for k in weights)
     final = min(100, int(final))
 

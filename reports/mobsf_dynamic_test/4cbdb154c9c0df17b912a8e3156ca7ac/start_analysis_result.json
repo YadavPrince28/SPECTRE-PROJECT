@@ -1,0 +1,85 @@
+{
+  "package": "com.tailoredapps",
+  "hash": "4cbdb154c9c0df17b912a8e3156ca7ac",
+  "android_version": 11.0,
+  "device_mode": "gadget",
+  "root_ca_embedded": true,
+  "device_identifier": "host.docker.internal:5555",
+  "device_model": "sdk_gphone_x86_64",
+  "tls_tests_available": false,
+  "version": "v4.6.1",
+  "activities": [
+    "com.tailoredapps.ui.splashscreen.SplashscreenActivity",
+    "com.tailoredapps.ui.main.MainActivity",
+    "com.tailoredapps.ui.weather.weatherlocation.WeatherLocationActivity",
+    "com.tailoredapps.ui.mysite.interests.InterestsActivity",
+    "com.tailoredapps.ui.myaccount.MyAccountActivity",
+    "com.tailoredapps.ui.push.PushPreferenceActivity",
+    "com.tailoredapps.ui.help.HelpActivity",
+    "com.tailoredapps.ui.contact.ContactActivity",
+    "com.tailoredapps.ui.feedback.activity.FeedbackActivity",
+    "com.tailoredapps.ui.klzapps.KlzAppsActivity",
+    "com.tailoredapps.ui.legal.LegalActivity",
+    "com.tailoredapps.ui.region.choose.ChooseRegionActivity",
+    "com.tailoredapps.ui.article.detail.ArticleActivity",
+    "com.tailoredapps.ui.article.diashow.DiashowActivity",
+    "com.tailoredapps.ui.article.diashowoverview.DiashowOverviewActivity",
+    "com.tailoredapps.ui.ressort.SingleRessortActivity",
+    "com.tailoredapps.ui.article.video.VideoActivity",
+    "com.tailoredapps.ui.comment.CommentListActivity",
+    "com.tailoredapps.ui.comment.create.CreateCommentActivity",
+    "com.tailoredapps.ui.comment.report.ReportCommentActivity",
+    "com.tailoredapps.ui.article.detail.SingleImageActivity",
+    "com.tailoredapps.ui.article.video.YoutubePlayerActivity",
+    "com.tailoredapps.ui.mysite.horoscopedetail.HoroscopeDetailActivity",
+    "com.tailoredapps.ui.freehtml.FreeHtmlActivity",
+    "com.tailoredapps.ui.welcome.WelcomeActivity",
+    "com.tailoredapps.ui.authorization.AuthActivity",
+    "com.google.android.gms.tagmanager.TagManagerPreviewActivity",
+    "com.google.firebase.auth.internal.FederatedSignInActivity",
+    "com.google.android.gms.appinvite.PreviewActivity",
+    "com.google.android.gms.ads.AdActivity",
+    "com.google.android.gms.auth.api.signin.internal.SignInHubActivity",
+    "com.google.android.gms.common.api.GoogleApiActivity",
+    "com.facebook.FacebookActivity",
+    "com.facebook.CustomTabMainActivity",
+    "com.mikepenz.aboutlibraries.ui.LibsActivity",
+    "com.android.billingclient.api.ProxyBillingActivity",
+    "com.smartadserver.android.library.rewarded.SASRewardedVideoActivity"
+  ],
+  "exported_activities": [
+    "com.tailoredapps.ui.main.MainActivity",
+    "com.google.android.gms.tagmanager.TagManagerPreviewActivity",
+    "com.google.firebase.auth.internal.FederatedSignInActivity",
+    "com.google.android.gms.appinvite.PreviewActivity"
+  ],
+  "deeplinks": {
+    "com.tailoredapps.ui.main.MainActivity": {
+      "schemes": [
+        "@string/offerIdentifier://"
+      ],
+      "mime_types": [],
+      "hosts": [],
+      "ports": [],
+      "paths": [],
+      "path_prefixs": [],
+      "path_patterns": [],
+      "browsable": true,
+      "well_known": {}
+    },
+    "com.google.android.gms.tagmanager.TagManagerPreviewActivity": {
+      "schemes": [
+        "tagmanager.c.com.tailoredapps://"
+      ],
+      "mime_types": [],
+      "hosts": [],
+      "ports": [],
+      "paths": [],
+      "path_prefixs": [],
+      "path_patterns": [],
+      "browsable": true,
+      "well_known": {}
+    }
+  },
+  "title": "Dynamic Analyzer"
+}

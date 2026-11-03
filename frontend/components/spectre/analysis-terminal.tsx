@@ -12,7 +12,6 @@ import {
 import { cn } from "@/lib/utils"
 import {
   MITM_LOG,
-  PERMISSIONS,
   RUNTIME_DELTA,
   STORYBOARD,
 } from "@/lib/spectre-data"
@@ -28,6 +27,15 @@ export function AnalysisTerminal({result}: {result: any}) {
     result?.static?.package ??
     "Unknown APK"
 
+    const authenticity =
+    result?.static?.authenticity ?? {}
+
+  const authenticityStatus =
+    authenticity?.status ?? "UNVERIFIED"
+
+  const authenticityBank =
+    authenticity?.bank_name ?? "" 
+  
   const permissionScore =
     result?.static?.permission_score ?? 0
 
@@ -49,7 +57,11 @@ export function AnalysisTerminal({result}: {result: any}) {
   
   return (
     <div className="flex flex-col gap-6">
-      <Header packageName={packageName} />
+        <Header
+        packageName={packageName}
+        authenticityStatus={authenticityStatus}
+        authenticityBank={authenticityBank}
+        />
        <QuickMetrics
         result={result}
         riskScore={riskScore}
@@ -72,8 +84,12 @@ export function AnalysisTerminal({result}: {result: any}) {
 
 function Header({
   packageName,
+  authenticityStatus,
+  authenticityBank,
 }: {
   packageName: string
+  authenticityStatus: string
+  authenticityBank: string
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -83,10 +99,29 @@ function Header({
         </span>
         <h2 className="text-xl font-semibold text-slate-100">Advanced Analysis Terminal</h2>
       </div>
-      <p className="text-sm text-slate-500">
-        Multi-dimensional structural fingerprinting and live runtime behavioral telemetry for{" "}
-        <span className="font-mono text-slate-400">{packageName}</span>.
-      </p>
+            <p className="text-sm text-slate-500">
+              Multi-dimensional structural fingerprinting and live runtime behavioral telemetry for{" "}
+              <span className="font-mono text-slate-400">{packageName}</span>
+
+              <span
+                className={cn(
+                  "ml-2 inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold",
+                  authenticityStatus === "VERIFIED"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    : authenticityStatus === "CERTIFICATE_MISMATCH"
+                      ? "border-red-500/30 bg-red-500/10 text-red-400"
+                      : "border-slate-700 bg-slate-800/50 text-slate-400",
+                )}
+              >
+                AUTHENTICITY: {authenticityStatus}
+              </span>
+
+              {authenticityBank && (
+                <span className="ml-2 font-mono text-[10px] text-slate-500">
+                  · {authenticityBank}
+                </span>
+              )}.
+            </p>
     </div>
   )
 }
@@ -246,35 +281,119 @@ function LeftColumn({
         </div>
       </div>
 
-      <PermissionMatrix />
+      <PermissionMatrix result={result} />
     </div>
   )
 }
 
-function PermissionMatrix() {
+function PermissionMatrix({ result }: { result: any }) {
+  const permissions =
+    result?.static?.permission_heatmap ?? []
+
+  const [showAll, setShowAll] = useState(false)
+
+  const highRiskPermissions = permissions.filter((p: any) => {
+    const risk = String(p?.risk ?? "").toUpperCase()
+    return risk === "CRITICAL" || risk === "HIGH"
+  })
+
+  const criticalCount = permissions.filter(
+    (p: any) =>
+      String(p?.risk ?? "").toUpperCase() === "CRITICAL"
+  ).length
+
+  const displayedPermissions = showAll
+    ? permissions
+    : highRiskPermissions
+
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-5">
       <h3 className="mb-4 flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-wider text-slate-200">
-        <CircleAlert className="size-4 text-rose-400" /> Permission Matrix Heatmap
+        <CircleAlert className="size-4 text-rose-400" />
+        Permission Matrix Heatmap
       </h3>
-      <div className="flex flex-wrap gap-2">
-        {PERMISSIONS.map((p) => (
-          <span
-            key={p.name}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[11px]",
-              p.critical
-                ? "border border-red-500/30 bg-red-950/50 text-red-400 shadow-[0_0_10px_-2px] shadow-red-500/40"
-                : "border border-slate-700 bg-slate-800/50 text-slate-400",
-            )}
-          >
-            {p.critical && <AlertTriangle className="size-3" />}
-            {p.name}
-          </span>
-        ))}
+
+      {/* SUMMARY */}
+      <div className="mb-4 flex flex-wrap items-center gap-3 font-mono text-[10px]">
+        <span className="text-red-400">
+          {highRiskPermissions.length} high-risk
+        </span>
+
+        <span className="text-slate-600">·</span>
+
+        <span className="text-slate-400">
+          {criticalCount} critical
+        </span>
+
+        <span className="text-slate-600">·</span>
+
+        <span className="text-slate-500">
+          {permissions.length} total declared
+        </span>
       </div>
+
+      {/* PERMISSIONS */}
+      <div className="flex flex-wrap gap-2">
+        {displayedPermissions.length > 0 ? (
+          displayedPermissions.map((p: any) => {
+            const risk = String(p?.risk ?? "").toUpperCase()
+
+            const isCritical =
+              risk === "CRITICAL" || risk === "HIGH"
+
+            const name =
+              p?.short_name ??
+              p?.permission?.split(".").pop() ??
+              p?.permission ??
+              "UNKNOWN"
+
+            return (
+              <span
+                key={p?.permission ?? name}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[11px]",
+                  isCritical
+                    ? "border border-red-500/30 bg-red-950/50 text-red-400 shadow-[0_0_10px_-2px] shadow-red-500/40"
+                    : "border border-slate-700 bg-slate-800/50 text-slate-400",
+                )}
+              >
+                {isCritical && (
+                  <AlertTriangle className="size-3" />
+                )}
+
+                {name}
+              </span>
+            )
+          })
+        ) : (
+          <span className="font-mono text-[11px] text-slate-500">
+            No declared permissions returned by Module 1.
+          </span>
+        )}
+      </div>
+
+      {/* SHOW ALL / COLLAPSE */}
+      {permissions.length > highRiskPermissions.length && (
+        <button
+          type="button"
+          onClick={() => setShowAll((value) => !value)}
+          className="mt-4 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1.5 font-mono text-[10px] text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-300"
+        >
+          {showAll
+            ? "SHOW HIGH-RISK ONLY"
+            : `SHOW ALL ${permissions.length} PERMISSIONS`}
+        </button>
+      )}
+
       <p className="mt-4 font-mono text-[10px] text-slate-500">
-        <span className="text-red-400">7 critical fraud permissions</span> detected · capable of SMS interception, accessibility hijack & overlay attacks.
+        <span className="text-red-400">
+          {highRiskPermissions.length} high-risk permissions
+        </span>{" "}
+        detected ·{" "}
+        <span className="text-slate-400">
+          {criticalCount} critical
+        </span>{" "}
+        · capable of SMS interception, accessibility hijack & overlay attacks.
       </p>
     </div>
   )
