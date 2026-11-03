@@ -1,5 +1,6 @@
 # Malware samples — never commit
 data/
+tests/
 
 # Python
 __pycache__/
