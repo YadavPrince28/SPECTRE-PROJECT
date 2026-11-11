@@ -16,6 +16,7 @@ python-dotenv>=1.0.0
 # --- Android Static Decompilation & Binary Parsing (Module 1) ---
 androguard>=3.3.5
 cryptography>=44.0.0
+quark-engine>=23.10.1
 
 # --- Behavioral Graph & Markov DNA Modeling (Module 2) ---
 networkx>=3.0

@@ -10,7 +10,7 @@
 
 Unlike conventional antivirus engines that rely purely on static signatures or permission thresholds, SPECTRE synthesizes five independent vectors of telemetry:
 
-1. **Module 1 (Static Analysis):** Permissions heatmap, critical security capabilities, trojan persistence markers, and advertising SDK detection via `androguard`.
+1. **Module 1 (Static Analysis):** Permissions heatmap, critical security capabilities, trojan persistence markers, and advertising SDK detection via `androguard`+ `quark-engine`.
 2. **Module 2 (Behavioral DNA):** Package-level Markov call graphs and TF-IDF class transition graphs matched against known historical trojan families.
 3. **Module 3 (Dynamic Sandbox & MobSF Orchestration):** Headless runtime execution inside an instrumented Android Virtual Device (AVD/Emulator) orchestrated via Mobile Security Framework (MobSF), monitoring dynamic API chains, runtime permission deltas, and mitmproxy socket exfiltration.
 4. **Module 4 (Social Engineering Engine):** Semantic intent classification using spaCy NLP across dual-encoded (UTF-8 and UTF-16LE) resources, extracting deceptive privilege traps, scareware prompts, and generating an interactive 4-step attack storyboard.
