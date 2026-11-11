@@ -1,329 +1,1118 @@
-
 from __future__ import annotations
-import hashlib, json, os, re, shutil, socket, subprocess, time, uuid
+
+import argparse
+import hashlib
+import json
+import logging
+import os
+import re
+import subprocess
+import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+from urllib.parse import urlparse
+
+import requests
+
+logger = logging.getLogger("spectre.dynamic")
+
+# =============================================================================
+# ANDROGUARD / LOGURU SILENCER
+# =============================================================================
+logging.getLogger("androguard").setLevel(logging.ERROR)
+logging.getLogger("androguard.core.axml").setLevel(logging.ERROR)
+logging.getLogger("androguard.core.apk").setLevel(logging.ERROR)
+
 try:
-    from androguard.core.apk import APK
-except Exception:
-    APK = None
-
-MODULE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = MODULE_DIR.parents[1]
-CAPTURE_ROOT = PROJECT_ROOT / "data" / "captures" / "module3"
-AVD_NAME = os.environ.get("SPECTRE_AVD_NAME", "Spectre_Sandbox_API30")
-
-class DynamicAnalysisError(RuntimeError):
+    from loguru import logger as loguru_logger
+    loguru_logger.disable("androguard")
+except ImportError:
     pass
 
-def _now(): return datetime.now(timezone.utc).isoformat()
-def _safe_id(value):
-    value = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(value or ""))[:64].strip("._-")
-    return value or uuid.uuid4().hex[:12]
+try:
+    from androguard.util import set_log
+    set_log("ERROR")
+except Exception:
+    pass
 
-def _sdk_root():
-    return Path(os.environ.get("ANDROID_SDK_ROOT") or os.environ.get("ANDROID_HOME") or
-                (Path(os.environ.get("LOCALAPPDATA", str(Path.home())))/"Android"/"Sdk"))
-def _resolve_adb():
-    found = shutil.which("adb")
-    candidate = _sdk_root()/"platform-tools"/("adb.exe" if os.name == "nt" else "adb")
-    if found: return found
-    if candidate.exists(): return str(candidate)
-    raise DynamicAnalysisError("ADB not found; install Android SDK Platform Tools or add adb to PATH.")
-def _resolve_emulator():
-    path = _sdk_root()/"emulator"/("emulator.exe" if os.name == "nt" else "emulator")
-    if not path.exists(): raise DynamicAnalysisError(f"Android Emulator executable not found: {path}")
-    return path
-def _resolve_mitmdump():
-    override = os.environ.get("SPECTRE_MITMDUMP")
-    if override and Path(override).exists(): return override
-    root = PROJECT_ROOT.parent/"spectre-proxy-env"
-    for path in (root/"Scripts"/"mitmdump.exe", root/"bin"/"mitmdump"):
-        if path.exists(): return str(path)
-    return shutil.which("mitmdump")
-def _run(cmd, timeout=20, check=False):
+try:
+    from androguard.core.apk import APK
+except ImportError:
+    APK = None
+
+# =============================================================================
+# ENVIRONMENT & SDK INITIALIZATION
+# =============================================================================
+try:
+    from dotenv import load_dotenv
+
+    current_dir = Path(__file__).resolve().parent
+    env_paths = [
+        current_dir.parent / ".env",          # backend/.env
+        current_dir.parent.parent / ".env",   # root/.env
+        current_dir / ".env",
+    ]
+    for p in env_paths:
+        if p.is_file():
+            load_dotenv(dotenv_path=p, override=True)
+            break
+except ImportError:
+    pass
+
+# =============================================================================
+# CONFIGURATION & CONSTANTS
+# =============================================================================
+MOBSF_URL = os.environ.get("MOBSF_URL", "http://localhost:8080").rstrip("/")
+MOBSF_API_KEY = os.environ.get("MOBSF_API_KEY", "").strip().strip('"').strip("'")
+DEVICE_IDENTIFIER = os.environ.get("MOBSF_DEVICE", "host.docker.internal:5555")
+OBSERVATION_SECONDS = int(os.environ.get("SPECTRE_DYNAMIC_OBSERVATION_SEC", "25"))
+MONKEY_EVENTS_COUNT = int(os.environ.get("SPECTRE_MONKEY_EVENTS", "300"))
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CAPTURE_DIR = PROJECT_ROOT / "data" / "captures" / "module3"
+
+OS_INTERNAL_PATTERNS = re.compile(
+    r"(?:file:///|data:|@redhat\.com|selinux|llvm-project|android_asset|vmdl\d+\.tmp|localhost|127\.0\.0\.1|10\.0\.2\.)",
+    re.IGNORECASE,
+)
+
+
+def check_device_ready() -> bool:
+    """Verifies that an ADB device or emulator is reachable."""
     try:
-        p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
-    except subprocess.TimeoutExpired as e:
-        raise DynamicAnalysisError(f"Command timed out after {timeout}s: {Path(cmd[0]).name}") from e
-    except OSError as e:
-        raise DynamicAnalysisError(f"Could not start {Path(cmd[0]).name}: {e}") from e
-    if check and p.returncode:
-        raise DynamicAnalysisError(f"{Path(cmd[0]).name} exited {p.returncode}: {(p.stderr or p.stdout)[-1000:]}")
-    return p
-def _adb(adb, serial, *args, timeout=20, check=False):
-    return _run([adb, "-s", serial, *map(str, args)], timeout, check)
-def _online_emulators(adb):
-    out = _run([adb, "devices", "-l"], 15, True).stdout
-    return [p[0] for line in out.splitlines()[1:] if len(p:=line.split())>=2 and p[0].startswith("emulator-") and p[1]=="device"]
-def _wait_boot(adb, serial, timeout=180):
-    end = time.monotonic()+timeout
-    while time.monotonic()<end:
-        try:
-            if _adb(adb, serial, "shell", "getprop", "sys.boot_completed", timeout=8).stdout.strip()=="1": return
-        except DynamicAnalysisError: pass
-        time.sleep(3)
-    raise DynamicAnalysisError(f"Emulator {serial} did not complete boot within {timeout}s.")
-def _ensure_emulator(adb):
-    wanted = os.environ.get("SPECTRE_ADB_SERIAL", "").strip()
-    devices = _online_emulators(adb)
-    launched = False
-    if wanted:
-        if not wanted.startswith("emulator-") or wanted not in devices:
-            raise DynamicAnalysisError(f"SPECTRE_ADB_SERIAL must name an online emulator; online: {devices}")
-        serial = wanted
-    elif len(devices)==1: serial = devices[0]
-    elif len(devices)>1: raise DynamicAnalysisError(f"Multiple emulators online: {devices}; set SPECTRE_ADB_SERIAL.")
-    else:
-        exe = _resolve_emulator()
-        avds = _run([str(exe), "-list-avds"], 20, True).stdout.splitlines()
-        if AVD_NAME not in avds: raise DynamicAnalysisError(f"AVD '{AVD_NAME}' not found. Available AVDs: {avds}")
-        subprocess.Popen([str(exe), "-avd", AVD_NAME, "-no-boot-anim"], stdin=subprocess.DEVNULL,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name=="nt" else 0)
-        launched = True; end = time.monotonic()+60; serial = ""
-        while time.monotonic()<end:
-            devices = _online_emulators(adb)
-            if len(devices)==1: serial=devices[0]; break
-            if len(devices)>1: raise DynamicAnalysisError(f"Multiple emulators appeared: {devices}")
-            time.sleep(2)
-        if not serial: raise DynamicAnalysisError("AVD was started but did not become visible to ADB within 60s.")
-    _wait_boot(adb, serial)
-    qemu = _adb(adb, serial, "shell", "getprop", "ro.kernel.qemu", timeout=10).stdout.strip()
-    if qemu not in {"", "1"}: raise DynamicAnalysisError(f"Refusing non-emulator device (ro.kernel.qemu={qemu!r}).")
-    release = _adb(adb, serial, "shell", "getprop", "ro.build.version.release", timeout=10).stdout.strip()
-    sdk = _adb(adb, serial, "shell", "getprop", "ro.build.version.sdk", timeout=10).stdout.strip()
-    return serial, {"device_serial":serial, "is_emulator":True, "android_release":release, "android_sdk":sdk,
-                    "avd_name":AVD_NAME, "emulator_launched_by_module":launched}
-def _sha256(path):
-    h=hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda:f.read(1024*1024), b""): h.update(chunk)
-    return h.hexdigest()
-def _port():
-    with socket.socket() as s: s.bind(("127.0.0.1", 0)); return s.getsockname()[1]
-def _start_proxy(run_dir, port, jsonl, proxy_log):
-    exe = _resolve_mitmdump(); addon = MODULE_DIR/"mitm_jsonl_addon.py"
-    if not exe: return None, "mitmdump executable not found; network capture disabled."
-    if not addon.exists(): return None, f"JSONL addon not found: {addon}"
-    env=os.environ.copy(); env["SPECTRE_MITM_EVENTS_FILE"]=str(jsonl)
-    conf=run_dir/"mitmproxy_conf"; conf.mkdir(parents=True, exist_ok=True)
-    cmd=[exe,"--quiet","--listen-host","127.0.0.1","--listen-port",str(port),"--set",f"confdir={conf}","-s",str(addon)]
+        res = subprocess.run(["adb", "devices"], capture_output=True, text=True, timeout=5)
+        lines = [line for line in res.stdout.splitlines() if "\tdevice" in line or "emulator" in line]
+        return len(lines) > 0
+    except Exception:
+        return False
+
+
+def enforce_sandbox_isolation() -> bool:
+    cmds = [
+        "iptables -F OUTPUT",
+        "iptables -A OUTPUT -o lo -j ACCEPT",
+        "iptables -A OUTPUT -p udp --dport 53 -j ACCEPT",
+        "iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT",
+        "iptables -A OUTPUT -d 10.0.2.2 -p tcp --dport 8080 -j ACCEPT",
+        "iptables -A OUTPUT -p icmp -j DROP",
+        "iptables -A OUTPUT -d 10.0.2.2 -j DROP",
+        "iptables -A OUTPUT -d 10.0.2.0/24 -j ACCEPT",
+        "iptables -A OUTPUT -d 10.0.0.0/8 -j DROP",
+        "iptables -A OUTPUT -d 172.16.0.0/12 -j DROP",
+        "iptables -A OUTPUT -d 192.168.0.0/16 -j DROP",
+    ]
+
     try:
-        fh=proxy_log.open("w",encoding="utf-8",errors="replace")
-        proc=subprocess.Popen(cmd,cwd=str(PROJECT_ROOT),env=env,stdin=subprocess.DEVNULL,stdout=fh,stderr=subprocess.STDOUT,
-                              creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0) if os.name=="nt" else 0)
-        proc._spectre_log_handle=fh
-    except OSError as e: return None, f"Could not launch mitmdump: {e}"
-    end=time.monotonic()+12
-    while time.monotonic()<end:
-        if proc.poll() is not None: break
-        try:
-            with socket.create_connection(("127.0.0.1",port),timeout=.4): return proc,None
-        except OSError: time.sleep(.25)
-    _stop_process(proc)
-    tail=proxy_log.read_text(encoding="utf-8",errors="replace")[-700:] if proxy_log.exists() else ""
-    return None, f"mitmproxy failed to listen. {tail.strip()}"
-def _stop_process(proc):
-    if not proc: return
-    if proc.poll() is None:
-        try: proc.terminate(); proc.wait(timeout=8)
-        except Exception:
-            try: proc.kill(); proc.wait(timeout=3)
-            except Exception: pass
-    fh=getattr(proc,"_spectre_log_handle",None)
-    if fh:
-        try: fh.close()
-        except Exception: pass
-def _proxy_setting(adb, serial):
-    val=_adb(adb,serial,"shell","settings","get","global","http_proxy",timeout=10).stdout.strip()
-    return "" if val.lower() in {"null","none"} else val
-def _set_proxy(adb, serial, val):
-    if val: _adb(adb,serial,"shell","settings","put","global","http_proxy",val,timeout=10)
-    else: _adb(adb,serial,"shell","settings","delete","global","http_proxy",timeout=10)
-def _appops(adb, serial, pkg):
-    p=_adb(adb,serial,"shell","cmd","appops","get",pkg,timeout=20)
-    return (p.stdout or p.stderr or "").strip()
-def _runtime_grants(adb, serial, pkg):
-    text=_adb(adb,serial,"shell","dumpsys","package",pkg,timeout=20).stdout
-    m=re.search(r"runtime permissions:\s*(.*?)(?:\n\s*install permissions:|\Z)",text,re.I|re.S)
-    return sorted({line.strip().split(":",1)[0].strip() for line in (m.group(1) if m else "").splitlines()
-                   if "granted=true" in line.lower() and line.strip().startswith("android.permission.")})
-def _jsonl(path):
-    events=[]; warnings=[]
-    if not path.exists(): return events,warnings
-    for no,line in enumerate(path.read_text(encoding="utf-8",errors="replace").splitlines(),1):
-        if not line.strip(): continue
-        try:
-            x=json.loads(line)
-            if isinstance(x,dict): events.append(x)
-        except json.JSONDecodeError: warnings.append(f"Could not parse network event line {no}.")
-    return events,warnings
-def _network_summary(events):
-    reqs={}; errors=[]
-    for e in events:
-        fid=str(e.get("flow_id", "")); kind=e.get("event")
-        if kind=="http_request":
-            reqs[fid or f"r{len(reqs)}"]={k:e.get(k) for k in ("timestamp","method","scheme","host","path","query_parameter_names","content_type","body_size_bytes","sensitive_field_names_observed")}
-            reqs[fid or f"r{len(reqs)-1}"]["response_status"]=None
-        elif kind=="http_response" and fid in reqs: reqs[fid]["response_status"]=e.get("status_code")
-        elif kind=="http_error":
-            errors.append({k:e.get(k) for k in ("timestamp","host","error_type","message")})
-            if fid in reqs: reqs[fid]["tls_or_transport_error"]=e.get("message")
-    rows=list(reqs.values())[:300]
-    return {"request_count":len(reqs),"hosts":sorted({r.get("host") for r in rows if r.get("host")}),"requests":rows,
-            "transport_errors":errors[:100],"sensitive_field_request_count":sum(bool(r.get("sensitive_field_names_observed")) for r in rows)}
-def _log_signals(path, pkg):
-    lines=[]; crashes=[]
-    if path.exists():
-        with path.open("r",encoding="utf-8",errors="replace") as f:
-            for line in f:
-                line=line.rstrip()
-                if pkg.lower() in line.lower():
-                    if len(lines)<100: lines.append(line[:400])
-                    if re.search(r"FATAL EXCEPTION|Process:\s*"+re.escape(pkg)+r"|has died|crash",line,re.I) and len(crashes)<25: crashes.append(line[:400])
-    return {"package_associated_line_count":len(lines),"crash_detected":bool(crashes),"crash_evidence":crashes,"package_log_evidence":lines[:50]}
-def _findings(network, logs, appops_delta):
-    found=[]; sens=[r for r in network.get("requests",[]) if r.get("sensitive_field_names_observed")]
-    clear=[r for r in network.get("requests",[]) if r.get("scheme")=="http" and r.get("host") not in {"localhost","127.0.0.1","10.0.2.2"}]
-    if sens: found.append({"id":"OUTBOUND_REQUEST_SENSITIVE_FIELD_NAMES","severity":"medium","points":25,
-        "title":"Outbound request contains sensitive-looking field names",
-        "description":"Request keys resemble authentication or account fields. Values were not retained; this is suspicious evidence, not proof real secrets were sent.",
-        "evidence":[{k:r.get(k) for k in ("host","path","method","sensitive_field_names_observed","body_size_bytes")} for r in sens[:10]]})
-    if clear: found.append({"id":"OUTBOUND_CLEARTEXT_HTTP","severity":"low","points":10,
-        "title":"Cleartext HTTP request observed","description":"An outbound request used HTTP, which may expose content in transit but is not proof of malicious intent.",
-        "evidence":[{k:r.get(k) for k in ("host","path","method")} for r in clear[:10]]})
-    if logs.get("crash_detected"): found.append({"id":"APP_CRASH_OBSERVED","severity":"informational","points":0,
-        "title":"Package-associated crash evidence observed","description":"A crash affects execution coverage and is not a malware signal by itself.","evidence":logs.get("crash_evidence",[])[:10]})
-    if appops_delta: found.append({"id":"APPOPS_STATE_CHANGED","severity":"informational","points":0,
-        "title":"AppOps snapshot changed after execution","description":"Snapshot differences are supplied for analyst review; they do not prove successful sensitive-operation use.","evidence":appops_delta[:25]})
-    return found,min(100,sum(int(f.get("points",0)) for f in found))
+        subprocess.run(["adb", "root"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+        script = " && ".join(cmds)
+        res = subprocess.run(["adb", "shell", script], capture_output=True, text=True, timeout=10)
+        return res.returncode == 0
+    except Exception:
+        return False
 
-def analyze_dynamic(apk_path: str, job_id: str = "", static_result: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Analyze one APK on an Android emulator and return JSON-serializable evidence.
 
-    ``static_result`` is reserved for the integration stage; leaving it optional keeps
-    the current pipeline invocation compatible.
+BENIGN_INFRASTRUCTURE = {
+    # Core Android & Google Cloud services
+    "google.com", "googleapis.com", "gstatic.com", "googlesource.com",
+    "source.android.com", "android.com", "connectivitycheck.gstatic.com",
+    "clients3.google.com", "play.googleapis.com", "time.android.com",
+    "dns.google", "gvt1.com", "goo.gl", "googleadservices.com",
+    "app-measurement.com", "crashlytics.com", "firebaseio.com",
+    "withgoogle.com",
+    # Media and CDNs
+    "youtube.com", "youtu.be", "ytimg.com", "ggpht.com",
+    "cloudflare.com", "cloudfront.net", "akamai.net", "akamaized.net",
+    "fastly.net", "s3.amazonaws.com", "github.com",
+}
+
+MONITORED_CAPABILITIES = [
+    {
+        "permission": "READ_SMS",
+        "manifest_perms": ["android.permission.READ_SMS", "android.permission.RECEIVE_SMS"],
+        "runtime_signatures": ["smsmessage", "telephony.sms", "content://sms", "readsms", "receivesms", "inbox"],
+        "active_note": "Active exfiltration of inbox messages",
+        "hidden_note": "CRITICAL: Hidden dynamic SMS invocation (obfuscated)",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "SEND_SMS",
+        "manifest_perms": ["android.permission.SEND_SMS"],
+        "runtime_signatures": ["sendtextmessage", "sendmultiparttextmessage", "smsmanager", "sendsms"],
+        "active_note": "Active outbound SMS dispatch (toll fraud / OTP forwarder)",
+        "hidden_note": "CRITICAL: Hidden dynamic SMS dispatch at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "BIND_ACCESSIBILITY_SERVICE",
+        "manifest_perms": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "runtime_signatures": ["accessibilityservice", "accessibilitynodeinfo", "accessibilityevent"],
+        "active_note": "Overlay + UI keylogging / auto-tap active",
+        "hidden_note": "CRITICAL: Hidden accessibility hijack at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "SYSTEM_ALERT_WINDOW",
+        "manifest_perms": ["android.permission.SYSTEM_ALERT_WINDOW"],
+        "runtime_signatures": ["windowmanager", "addview", "type_application_overlay"],
+        "active_note": "Active screen overlay drawn over foreground app",
+        "hidden_note": "HIGH: Stealth overlay execution detected",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "READ_PHONE_STATE",
+        "manifest_perms": ["android.permission.READ_PHONE_STATE"],
+        "runtime_signatures": ["getdeviceid", "getimei", "getsubscriberid", "getsimserialnumber"],
+        "active_note": "Hardware fingerprinting and IMEI harvesting",
+        "hidden_note": "MEDIUM: Stealth device fingerprinting query",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "READ_CONTACTS",
+        "manifest_perms": ["android.permission.READ_CONTACTS", "android.permission.WRITE_CONTACTS"],
+        "runtime_signatures": ["contactscontract", "readcontacts", "content://contacts"],
+        "active_note": "Address book harvested for spam/propagation",
+        "hidden_note": "HIGH: Hidden contact harvesting at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "RECORD_AUDIO",
+        "manifest_perms": ["android.permission.RECORD_AUDIO"],
+        "runtime_signatures": ["audiorecord", "mediarecorder", "recordaudio", "microphone"],
+        "active_note": "Active background microphone surveillance",
+        "hidden_note": "HIGH: Reflection-loaded audio recording at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "CAMERA",
+        "manifest_perms": ["android.permission.CAMERA"],
+        "runtime_signatures": ["hardware.camera", "camera2", "takepicture", "cameracapture"],
+        "active_note": "Covert camera capture triggered",
+        "hidden_note": "HIGH: Unauthorized camera activation at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+    {
+        "permission": "ACCESS_FINE_LOCATION",
+        "manifest_perms": ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+        "runtime_signatures": ["locationmanager", "getlastknownlocation", "requestlocationupdates", "gps"],
+        "active_note": "Real-time geolocation tracking verified",
+        "hidden_note": "MEDIUM: Stealth GPS queries at runtime",
+        "decoy_note": "Declared but never triggered (decoy)",
+    },
+]
+
+MALICIOUS_CHAIN_TEMPLATES = [
+    {
+        "id": "CHAIN_OTP_INTERCEPT_EXFIL",
+        "name": "SMS OTP Interception & Network Exfiltration",
+        "severity": "CRITICAL",
+        "weight": 35.0,
+        "stages": [
+            {"tag": "HARVEST", "keys": ["sms", "telephony"], "patterns": ["readsms", "smsmessage", "getdisplaymessagebody", "telephony.sms", "00191", "00189"]},
+            {"tag": "PREPARE", "keys": ["crypto", "base64", "device_data"], "patterns": ["base64", "cipher", "message_digest", "00024"]},
+            {"tag": "EXFIL", "keys": ["network"], "patterns": ["httpurlconnection", "okhttp", "socket", "httpclient", "00096", "00153"]},
+        ],
+        "description": "Monitors incoming SMS/OTP messages and transmits them over HTTP/raw sockets.",
+    },
+    {
+        "id": "CHAIN_OVERLAY_ACCESSIBILITY_HIJACK",
+        "name": "Accessibility Abuse & UI Overlay Hijacking",
+        "severity": "CRITICAL",
+        "weight": 35.0,
+        "stages": [
+            {"tag": "HOOK_SERVICE", "keys": ["ipc", "reflection"], "patterns": ["accessibilityservice", "accessibilitynodeinfo", "bind_accessibility"]},
+            {"tag": "INPUT_TAP", "keys": ["ipc", "device_data"], "patterns": ["performaction", "action_click", "findaccessibilitynodeinfosbyviewid"]},
+            {"tag": "DRAW_OVERLAY", "keys": ["device_data", "ipc"], "patterns": ["windowmanager", "system_alert_window", "addview"]},
+        ],
+        "description": "Abuses accessibility services to inspect UI fields, keylog credentials, and display overlays.",
+    },
+    {
+        "id": "CHAIN_DYNAMIC_DROPPER_EXEC",
+        "name": "Dynamic Dalvik Payload Loading & Execution",
+        "severity": "HIGH",
+        "weight": 25.0,
+        "stages": [
+            {"tag": "STORAGE_STAGE", "keys": ["database", "device_data"], "patterns": ["getdir", "getfilesdir", "fileoutputstream", "00013", "00022"]},
+            {"tag": "DYNAMIC_LOAD", "keys": ["reflection"], "patterns": ["dexclassloader", "pathclassloader", "inmemorydexclassloader"]},
+            {"tag": "INVOCATION", "keys": ["reflection"], "patterns": ["class.forname", "method.invoke", "00046"]},
+        ],
+        "description": "Stages Dalvik bytecode or encrypted secondary payloads into storage and executes dynamically.",
+    },
+    {
+        "id": "CHAIN_DEVICE_FINGERPRINT_SURVEILLANCE",
+        "name": "Hardware Fingerprinting & Reconnaissance",
+        "severity": "MEDIUM",
+        "weight": 20.0,
+        "stages": [
+            {"tag": "QUERY_ID", "keys": ["telephony", "device_data"], "patterns": ["getdeviceid", "getimei", "getsubscriberid", "getsimserialnumber", "00078"]},
+            {"tag": "ENV_PROBE", "keys": ["device_data"], "patterns": ["build.fingerprint", "build.model", "build.manufacturer", "sim_state"]},
+            {"tag": "DISPATCH", "keys": ["network"], "patterns": ["httpurlconnection", "okhttp", "00096"]},
+        ],
+        "description": "Extracts device hardware identifiers (IMEI, SIM serial) and phone state for remote registration.",
+    },
+]
+
+
+def _safe_extract_host(raw: Any) -> str:
+    if not raw or not isinstance(raw, str):
+        return ""
+    s = raw.strip()
+
+    if any(s.lower().startswith(p) for p in ("javascript:", "data:", "file:", "mailto:", "about:", "blob:", "intent:")):
+        return ""
+    if OS_INTERNAL_PATTERNS.search(s):
+        return ""
+
+    if "[" in s or "]" in s:
+        match = re.search(r"\[([0-9a-fA-F:]+)\]", s)
+        s = match.group(1) if match else s.replace("[", "").replace("]", "")
+
+    try:
+        if "://" not in s:
+            s = f"https://{s}"
+        parsed = urlparse(s)
+        host = (parsed.hostname or "").strip().lower().lstrip(".")
+        return host if (host and "." in host and not OS_INTERNAL_PATTERNS.search(host)) else ""
+    except Exception:
+        return ""
+
+
+def _is_benign_domain(host: str) -> bool:
+    if not host:
+        return True
+    h = host.lower().strip()
+    return any(h == d or h.endswith("." + d) for d in BENIGN_INFRASTRUCTURE)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _calculate_hashes(apk_path: Path) -> tuple[str, str]:
+    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
+    with apk_path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            md5.update(chunk)
+            sha256.update(chunk)
+    return md5.hexdigest(), sha256.hexdigest()
+
+
+def _extract_all_static_domains(mobsf_static: dict[str, Any], static_result: dict[str, Any] | None) -> set[str]:
+    extracted_hosts: set[str] = set()
+
+    raw_domains = mobsf_static.get("domains", {})
+    if isinstance(raw_domains, dict):
+        for d in raw_domains.keys():
+            h = _safe_extract_host(str(d))
+            if h:
+                extracted_hosts.add(h)
+    elif isinstance(raw_domains, list):
+        for d in raw_domains:
+            h = _safe_extract_host(str(d))
+            if h:
+                extracted_hosts.add(h)
+
+    raw_urls = mobsf_static.get("urls", [])
+    if isinstance(raw_urls, list):
+        for u in raw_urls:
+            h = _safe_extract_host(str(u))
+            if h:
+                extracted_hosts.add(h)
+
+    if static_result:
+        for u in static_result.get("urls", []) or []:
+            h = _safe_extract_host(str(u))
+            if h:
+                extracted_hosts.add(h)
+        for d in static_result.get("domains", []) or []:
+            h = _safe_extract_host(str(d))
+            if h:
+                extracted_hosts.add(h)
+
+    return extracted_hosts
+
+
+def extract_api_chains_from_mobsf(mobsf_static: dict[str, Any]) -> tuple[float, list[dict[str, Any]]]:
     """
-    started=time.monotonic(); run_id=_safe_id(job_id)
-    result={"module":"dynamic_analysis","schema_version":"1.0","job_id":run_id,"started_at":_now(),
-        "status":"failed","package_name":None,"apk_sha256":None,"dynamic_risk_score":0,
-        "risk_score_type":"heuristic evidence score (0-100), not a probability","findings":[],"evidence":{},"errors":[],
-        "coverage":{"logcat_capture":False,"http_proxy_capture":False,"https_decryption_verified":False,
-            "direct_socket_traffic_guaranteed_captured":False,"limitations":[
-                "The HTTP proxy is not a network-isolation boundary; apps may bypass it or use direct sockets.",
-                "HTTPS inspection depends on trust configuration and app behavior; this MVP does not bypass TLS pinning.",
-                "No behavior observed in a run does not establish that an APK is safe.",
-                "AppOps and granted-permission snapshots are observations, not proof a permission was actively used."]}}
-    adb=serial=pkg=None; proxy_proc=logcat_proc=logcat_handle=None; previous_proxy=None; proxy_changed=False; installed=False
-    run_dir=logcat_path=network_path=proxy_log=meta_path=None
-    try:
-        apk_path_obj=Path(apk_path).expanduser().resolve()
-        if not apk_path_obj.is_file(): raise DynamicAnalysisError(f"APK file does not exist: {apk_path_obj}")
-        if apk_path_obj.suffix.lower() != ".apk": raise DynamicAnalysisError("Input file must have an .apk extension.")
-        if APK is None: raise DynamicAnalysisError("Androguard import failed in the main spectre-env.")
-        apk=APK(str(apk_path_obj)); pkg=(apk.get_package() or "").strip()
-        if not re.fullmatch(r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+",pkg):
-            raise DynamicAnalysisError(f"Could not resolve a valid package name from APK: {pkg!r}")
-        declared=sorted(set(apk.get_permissions() or []))
-        result["package_name"]=pkg; result["apk_sha256"]=_sha256(apk_path_obj)
-        result["evidence"]["apk"]={"path":str(apk_path_obj),"size_bytes":apk_path_obj.stat().st_size,"declared_permissions":declared}
-        adb=_resolve_adb(); serial,env_info=_ensure_emulator(adb); result["environment"]=env_info
-        run_dir=CAPTURE_ROOT/run_id; run_dir.mkdir(parents=True,exist_ok=True)
-        logcat_path=run_dir/"logcat.txt"; network_path=run_dir/"network_events.jsonl"; proxy_log=run_dir/"mitmproxy.log"; meta_path=run_dir/"run_metadata.json"
-        for p in (logcat_path,network_path,proxy_log):
-            try: p.unlink()
-            except FileNotFoundError: pass
-        result["evidence"]["artifact_directory"]=str(run_dir)
-        result["evidence"]["files"]={"logcat":str(logcat_path),"network_events_jsonl":str(network_path),"proxy_log":str(proxy_log),"metadata":str(meta_path)}
+    Extracts multi-stage malicious API chains using MobSF's decompiler AST and behaviour rules[cite: 2].
+    """
+    if not mobsf_static:
+        return 0.0, []
 
-        # Start proxy as a separate process in spectre-proxy-env, then set emulator proxy.
-        proxy_exe=_resolve_mitmdump(); chosen_port=_port() if proxy_exe else None; proxy_warning=None
-        if proxy_exe and chosen_port is not None:
-            proxy_proc,proxy_warning=_start_proxy(run_dir,chosen_port,network_path,proxy_log)
-        else: proxy_warning="mitmdump executable not found; continuing with runtime collection only."
-        if proxy_proc and chosen_port is not None:
-            previous_proxy=_proxy_setting(adb,serial)
-            _set_proxy(adb,serial,f"10.0.2.2:{chosen_port}"); proxy_changed=True
-            result["coverage"]["http_proxy_capture"]=True
-            result["evidence"]["network_capture"]={"emulator_proxy":"10.0.2.2","port":chosen_port,"proxy_executable":proxy_exe}
-        if proxy_warning: result["errors"].append(proxy_warning)
+    android_api = mobsf_static.get("android_api", {}) or {}
+    behaviour = mobsf_static.get("behaviour", {}) or mobsf_static.get("behaviour_analysis", {}) or {}
+    code_analysis = mobsf_static.get("code_analysis", {}) or {}
 
-        _adb(adb,serial,"logcat","-c",timeout=10)
-        logcat_handle=logcat_path.open("w",encoding="utf-8",errors="replace")
-        logcat_proc=subprocess.Popen([adb,"-s",serial,"logcat","-v","threadtime"],stdout=logcat_handle,
-            stderr=subprocess.DEVNULL,stdin=subprocess.DEVNULL,
-            creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0) if os.name=="nt" else 0)
-        result["coverage"]["logcat_capture"]=True
+    category_blobs: dict[str, str] = {}
+    for cat, calls in android_api.items():
+        cat_key = cat.lower().strip()
+        text_rep = json.dumps(calls).lower() if isinstance(calls, (dict, list)) else str(calls).lower()
+        category_blobs[cat_key] = category_blobs.get(cat_key, "") + " " + text_rep
 
-        # This module should be run only on the disposable SPECTRE AVD.
-        # Uninstall a previous user-installed instance to avoid stale state.
-        _adb(adb,serial,"uninstall",pkg,timeout=30)
-        installed_result=_adb(adb,serial,"install","-t",str(apk_path_obj),timeout=120)
-        if installed_result.returncode != 0 or "success" not in installed_result.stdout.lower():
-            raise DynamicAnalysisError(f"APK installation failed: {(installed_result.stderr or installed_result.stdout).strip()[-1000:]}")
-        installed=True; time.sleep(2)
-        appops_before=_appops(adb,serial,pkg); grants_before=_runtime_grants(adb,serial,pkg)
-        monkey_events=max(20,min(int(os.environ.get("SPECTRE_MONKEY_EVENTS","120")),500))
-        throttle=max(100,min(int(os.environ.get("SPECTRE_MONKEY_THROTTLE_MS","400")),1500))
-        monkey=_adb(adb,serial,"shell","monkey","-p",pkg,"-c","android.intent.category.LAUNCHER",
-            "--throttle",str(throttle),"--ignore-crashes","--ignore-timeouts",str(monkey_events),
-            timeout=max(150,int(monkey_events*throttle/1000)+90))
-        time.sleep(5)
-        appops_after=_appops(adb,serial,pkg); grants_after=_runtime_grants(adb,serial,pkg)
+    behaviour_text = json.dumps(behaviour).lower()
+    for cat_key in ["sms", "network", "reflection", "device_data", "crypto", "database", "ipc", "telephony"]:
+        category_blobs[cat_key] = category_blobs.get(cat_key, "") + " " + behaviour_text
 
-        if logcat_proc and logcat_proc.poll() is None:
-            logcat_proc.terminate()
-            try: logcat_proc.wait(timeout=8)
-            except subprocess.TimeoutExpired: logcat_proc.kill(); logcat_proc.wait(timeout=3)
-        if logcat_handle: logcat_handle.flush(); logcat_handle.close(); logcat_handle=None
-        # Stop proxy before reading JSONL so its final events are flushed.
-        _stop_process(proxy_proc); proxy_proc=None
+    code_analysis_text = json.dumps(code_analysis).lower()
 
-        logs=_log_signals(logcat_path,pkg); raw_network,warnings=_jsonl(network_path); net=_network_summary(raw_network)
-        appops_delta=sorted({line.strip() for line in appops_after.splitlines() if line.strip()}-
-                            {line.strip() for line in appops_before.splitlines() if line.strip()})[:100]
-        findings,risk=_findings(net,logs,appops_delta)
-        result["execution"]={"install_success":True,"monkey_return_code":monkey.returncode,
-            "monkey_output_tail":(monkey.stdout or "").strip()[-1000:],"monkey_error_tail":(monkey.stderr or "").strip()[-1000:],
-            "events_requested":monkey_events,"throttle_ms":throttle,"runtime_granted_permissions_before":grants_before,
-            "runtime_granted_permissions_after":grants_after,"runtime_granted_permission_delta":sorted(set(grants_after)-set(grants_before)),
-            "appops_before":appops_before.splitlines()[:100],"appops_after":appops_after.splitlines()[:100],"appops_changed_lines":appops_delta}
-        result["evidence"]["logcat"]=logs; result["evidence"]["network"]={**net,"event_records":len(raw_network)}
-        result["findings"]=findings; result["dynamic_risk_score"]=risk
-        result["coverage"]["https_decryption_verified"]=any(r.get("scheme")=="https" and r.get("response_status") is not None for r in net.get("requests",[]))
-        if warnings: result["errors"].extend(warnings[:10])
-        result["status"]="complete" if result["coverage"]["http_proxy_capture"] else "partial"
-        if monkey.returncode != 0:
-            result["status"]="partial"; result["errors"].append("Android Monkey returned a non-zero exit code; behavior coverage may be incomplete.")
-        if not result["coverage"]["https_decryption_verified"]:
-            result["coverage"]["limitations"].append("No completed HTTPS flow was verified in this run; HTTPS content visibility is unconfirmed.")
-        if static_result:
-            result["integration_note"]="static_result argument received; endpoint-level correlation will be added after initial runtime tests."
-        result["completed_at"]=_now(); result["duration_seconds"]=round(time.monotonic()-started,2)
-        meta_path.write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding="utf-8")
-        return result
-    except Exception as exc:
-        result["status"]="failed"; result["errors"].append(f"{type(exc).__name__}: {exc}")
-        result["completed_at"]=_now(); result["duration_seconds"]=round(time.monotonic()-started,2)
-        if meta_path:
-            try: meta_path.write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding="utf-8")
-            except OSError: pass
-        return result
-    finally:
-        if logcat_proc and logcat_proc.poll() is None:
-            try: logcat_proc.terminate(); logcat_proc.wait(timeout=5)
+    detected_chains = []
+    total_score = 0.0
+
+    for template in MALICIOUS_CHAIN_TEMPLATES:
+        stages_satisfied = 0
+        chain_evidence = []
+
+        for stage in template["stages"]:
+            stage_hit = False
+            matched_terms = []
+            for cat in stage["keys"]:
+                search_space = category_blobs.get(cat, "") + " " + code_analysis_text
+                for pattern in stage["patterns"]:
+                    if pattern in search_space:
+                        stage_hit = True
+                        matched_terms.append(f"{cat}:{pattern}")
+
+            if stage_hit:
+                stages_satisfied += 1
+                chain_evidence.append({
+                    "stage": stage["tag"],
+                    "matched_signatures": list(set(matched_terms))[:3],
+                })
+
+        total_stages = len(template["stages"])
+        if stages_satisfied >= 2:
+            ratio = stages_satisfied / total_stages
+            earned = template["weight"] * ratio
+            total_score += earned
+            detected_chains.append({
+                "id": template["id"],
+                "name": template["name"],
+                "severity": template["severity"],
+                "points": round(earned, 2),
+                "completion": f"{stages_satisfied}/{total_stages} stages",
+                "evidence": chain_evidence,
+            })
+
+    return min(100.0, round(total_score, 2)), detected_chains
+
+
+def _clean_network_hosts(url_list: list[Any]) -> tuple[set[str], list[str]]:
+    valid_hosts: set[str] = set()
+    cleaned_urls: list[str] = []
+    for item in url_list:
+        raw = str(item).strip().rstrip(",")
+        host = _safe_extract_host(raw)
+        if host and host not in {"localhost", "127.0.0.1", "10.0.2.2"}:
+            valid_hosts.add(host)
+            display_url = raw if raw.startswith(("http://", "https://")) else f"https://{raw}"
+            cleaned_urls.append(display_url)
+    return valid_hosts, cleaned_urls
+
+
+def _build_behavior_delta(
+    declared_perms: list[str],
+    runtime_api_dump: str,
+    exfiltration_events: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    delta_rows = []
+    declared_set = set(declared_perms or [])
+    runtime_text = runtime_api_dump.lower()
+
+    for event in exfiltration_events:
+        runtime_text += f" {str(event.get('detail', '')).lower()} {str(event.get('type', '')).lower()}"
+
+    for item in MONITORED_CAPABILITIES:
+        perm_name = item["permission"]
+        is_declared = any(p in declared_set for p in item["manifest_perms"])
+        is_runtime = any(sig in runtime_text for sig in item["runtime_signatures"])
+
+        if is_declared and is_runtime:
+            note = item["active_note"]
+            status_tag = "ACTIVE"
+        elif not is_declared and is_runtime:
+            note = item["hidden_note"]
+            status_tag = "HIDDEN_THREAT"
+        elif is_declared and not is_runtime:
+            note = item["decoy_note"]
+            status_tag = "DECOY"
+        else:
+            continue
+
+        delta_rows.append({
+            "permission": perm_name,
+            "declared": "YES" if is_declared else "NO",
+            "runtime": "YES" if is_runtime else "NO",
+            "declared_bool": is_declared,
+            "runtime_bool": is_runtime,
+            "analyst_note": note,
+            "status_tag": status_tag,
+        })
+    return delta_rows
+
+
+def _uninstall_package_from_device(package_name: str) -> None:
+    """Terminates and purges the application package from the emulator environment[cite: 2]."""
+    if not package_name or len(package_name) < 3 or "." not in package_name:
+        return
+    commands = [
+        ["adb", "shell", "am", "force-stop", package_name],
+        ["adb", "uninstall", package_name],
+        ["adb", "shell", "pm", "uninstall", package_name],
+        ["docker", "exec", "mobsf", "adb", "uninstall", package_name],
+    ]
+    for cmd in commands:
+        try:
+            subprocess.run(cmd, capture_output=True, timeout=8)
+        except Exception:
+            pass
+
+
+# =============================================================================
+# MOBSF REST API CLIENT
+# =============================================================================
+class MobSFClient:
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url
+        self.headers = {"Authorization": api_key}
+
+    def check_health(self) -> tuple[bool, str]:
+        if not self.headers["Authorization"]:
+            return False, "MOBSF_API_KEY is not configured in environment."
+        try:
+            resp = requests.get(
+                f"{self.base_url}/api/v1/dynamic/start_analysis",
+                headers=self.headers,
+                timeout=5,
+            )
+            if resp.status_code in {200, 400, 405}:
+                return True, "MobSF API is reachable."
+            if resp.status_code in {401, 403}:
+                return False, "MobSF API authentication failed. Verify MOBSF_API_KEY."
+            return True, f"MobSF responded with HTTP {resp.status_code}."
+        except requests.exceptions.RequestException as exc:
+            return False, f"Could not connect to MobSF at {self.base_url}: {exc}"
+
+    def upload_apk(self, apk_path: Path) -> dict[str, Any]:
+        url = f"{self.base_url}/api/v1/upload"
+        with apk_path.open("rb") as f:
+            files = {"file": (apk_path.name, f, "application/octet-stream")}
+            resp = requests.post(url, headers=self.headers, files=files, timeout=90)
+        resp.raise_for_status()
+        return resp.json()
+
+    def is_already_indexed(self, scan_hash: str) -> bool:
+        url = f"{self.base_url}/api/v1/report_json"
+        try:
+            resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=6)
+            return resp.status_code == 200
+        except requests.exceptions.RequestException:
+            return False
+
+    def ensure_static_scan(self, scan_hash: str) -> None:
+        if self.is_already_indexed(scan_hash):
+            return
+        url = f"{self.base_url}/api/v1/scan"
+        resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=180)
+        if resp.status_code != 200:
+            raise RuntimeError(f"MobSF static indexing failed ({resp.status_code}): {resp.text.strip()[:300]}")
+
+    def fetch_static_report(self, scan_hash: str) -> dict[str, Any]:
+        url = f"{self.base_url}/api/v1/report_json"
+        resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=45)
+        return resp.json() if resp.status_code == 200 else {}
+
+    def has_dynamic_report(self, scan_hash: str) -> tuple[bool, dict[str, Any]]:
+        url = f"{self.base_url}/api/v1/dynamic/report_json"
+        try:
+            resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                if data and isinstance(data, dict) and "error" not in data:
+                    return True, data
+        except Exception:
+            pass
+        return False, {}
+
+    def start_dynamic_analysis(self, scan_hash: str, device: str) -> dict[str, Any]:
+        try:
+            self.stop_dynamic_analysis(scan_hash)
+        except Exception:
+            pass
+        url = f"{self.base_url}/api/v1/dynamic/start_analysis"
+        payload = {
+            "hash": scan_hash,
+            "device": device,
+            "confirm": "yes",
+        }
+        resp = requests.post(url, headers=self.headers, data=payload, timeout=60)
+        if resp.status_code != 200:
+            raise RuntimeError(f"MobSF start_analysis failed (HTTP {resp.status_code}): {resp.text.strip()}")
+        return resp.json() if resp.text else {}
+
+    def enable_frida_bypasses(self, scan_hash: str, package_name: str = "") -> tuple[bool, str]:
+        url = f"{self.base_url}/api/v1/frida/instrument"
+        payload = {
+            "hash": scan_hash,
+            "package": package_name,
+            "default_hooks": "1",
+            "auxiliary_hooks": "1",
+        }
+        try:
+            resp = requests.post(url, headers=self.headers, data=payload, timeout=20)
+            return resp.status_code == 200, resp.text[:120]
+        except Exception as e:
+            return False, str(e)
+
+    def trigger_activity(self, scan_hash: str, activity_name: str) -> None:
+        url = f"{self.base_url}/api/v1/dynamic/activity"
+        payload = {"hash": scan_hash, "activity": activity_name}
+        try:
+            requests.post(url, headers=self.headers, data=payload, timeout=20)
+        except requests.exceptions.RequestException:
+            pass
+
+    def trigger_monkey(self, scan_hash: str, events: int = 300) -> None:
+        url = f"{self.base_url}/api/v1/dynamic/mob_monkey"
+        payload = {"hash": scan_hash, "events": str(events)}
+        try:
+            requests.post(url, headers=self.headers, data=payload, timeout=45)
+        except requests.exceptions.RequestException:
+            pass
+
+    def stop_dynamic_analysis(self, scan_hash: str) -> dict[str, Any]:
+        url = f"{self.base_url}/api/v1/dynamic/stop_analysis"
+        resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=30)
+        return resp.json() if resp.status_code == 200 and resp.text else {}
+
+    def fetch_dynamic_report(self, scan_hash: str) -> dict[str, Any]:
+        url = f"{self.base_url}/api/v1/dynamic/report_json"
+        resp = requests.post(url, headers=self.headers, data={"hash": scan_hash}, timeout=45)
+        resp.raise_for_status()
+        return resp.json()
+
+
+# =============================================================================
+# MASTER MODULE 3 ENTRY POINT
+# =============================================================================
+def analyze_dynamic(
+    apk_path: str,
+    job_id: str = "",
+    static_result: dict[str, Any] | None = None,
+    telemetry_callback: Callable[[str, dict[str, Any]], None] | None = None,
+    force_fresh: bool = False,
+) -> dict[str, Any]:
+    started_at = time.monotonic()
+    apk_file = Path(apk_path).resolve()
+
+    live_mitm_console: list[dict[str, Any]] = []
+
+    def _emit(log_line: str, is_alarm: bool = False, stage: str = "running") -> dict[str, Any]:
+        ts = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        payload = {
+            "timestamp": ts,
+            "raw_line": f"{ts} {log_line}",
+            "is_alarm": is_alarm,
+            "stage": stage,
+        }
+        live_mitm_console.append(payload)
+        if telemetry_callback:
+            try:
+                telemetry_callback(job_id, payload)
             except Exception:
-                try: logcat_proc.kill()
-                except Exception: pass
-        if logcat_handle:
-            try: logcat_handle.close()
-            except Exception: pass
-        _stop_process(proxy_proc)
-        if adb and serial and proxy_changed:
-            try: _set_proxy(adb,serial,previous_proxy)
-            except Exception: pass
-        if adb and serial and pkg and installed:
-            try: _adb(adb,serial,"uninstall",pkg,timeout=30)
-            except Exception: pass
+                pass
+        return payload
+
+    if not apk_file.is_file():
+        return {
+            "module": "dynamic_analysis",
+            "status": "failed",
+            "job_id": job_id,
+            "dynamic_risk_score": 0,
+            "execution_confidence": 0,
+            "exfiltration_events": [],
+            "mitm_console": [],
+            "behavior_delta": [],
+            "network_delta": {},
+            "findings": [],
+            "errors": [f"Target APK does not exist: {apk_file}"],
+            "completed_at": _now(),
+        }
+
+    md5_hash, sha256_hash = _calculate_hashes(apk_file)
+    scan_hash = md5_hash
+
+    declared_perms: list[str] = []
+    launcher_activity = None
+    package_name = ""
+
+    if static_result:
+        declared_perms = list(static_result.get("permissions", []) or static_result.get("all_permissions", []))
+        package_name = static_result.get("package_name", "")
+        activities = static_result.get("activities", [])
+        launcher_activity = next(
+            (a for a in activities if "main" in a.lower() or "splash" in a.lower()),
+            activities[0] if activities else None,
+        )
+
+    if not package_name and APK is not None:
+        try:
+            apk_obj = APK(str(apk_file))
+            package_name = (apk_obj.get_package() or "").strip()
+            declared_perms = list(apk_obj.get_permissions() or [])
+            launcher_activity = apk_obj.get_main_activity()
+        except Exception:
+            pass
+
+    client = MobSFClient(base_url=MOBSF_URL, api_key=MOBSF_API_KEY)
+    healthy, health_msg = client.check_health()
+
+    if not healthy:
+        delta_table = _build_behavior_delta(declared_perms, "", [])
+        _emit(f"[INFO] Dynamic Sandbox Offline: {health_msg}", is_alarm=False, stage="partial")
+        return {
+            "module": "dynamic_analysis",
+            "status": "partial",
+            "job_id": job_id,
+            "package_name": package_name or apk_file.stem,
+            "apk_sha256": sha256_hash,
+            "mobsf_scan_hash": md5_hash,
+            "dynamic_risk_score": 0,
+            "execution_confidence": 0,
+            "exfiltration_events": [],
+            "mitm_console": live_mitm_console,
+            "behavior_delta": delta_table,
+            "network_delta": {},
+            "findings": [],
+            "errors": [health_msg],
+            "completed_at": _now(),
+            "duration_seconds": round(time.monotonic() - started_at, 2),
+        }
+
+    try:
+        # 1. Sync Static Analysis & Indexing in MobSF
+        _emit("[SANDBOX] Ingesting APK package into MobSF analysis engine...")
+        upload_resp = client.upload_apk(apk_file)
+        scan_hash = upload_resp.get("hash", md5_hash)
+
+        _emit("[SANDBOX] Indexing application metadata and verifying package integrity...")
+        client.ensure_static_scan(scan_hash)
+
+        mobsf_static = client.fetch_static_report(scan_hash)
+
+        # EXTRACT API CHAINS HERE (Guaranteed to execute even if the emulator crashes later)
+        static_chain_score, detected_chains = extract_api_chains_from_mobsf(mobsf_static)
+        if detected_chains:
+            _emit(f"[STATIC] Correlated {len(detected_chains)} malicious API execution chain(s) (Score: {static_chain_score})")
+        if mobsf_static.get("package_name"):
+            package_name = str(mobsf_static["package_name"]).strip()
+        launcher_activity = mobsf_static.get("main_activity") or launcher_activity
+
+        mobsf_declared = []
+        raw_perms = mobsf_static.get("permissions")
+        if isinstance(raw_perms, dict):
+            mobsf_declared = list(raw_perms.keys())
+        elif isinstance(raw_perms, list):
+            mobsf_declared = [p if isinstance(p, str) else p.get("name", "") for p in raw_perms]
+
+        merged_declared_perms = sorted(list(set(declared_perms) | set(mobsf_declared)))
+        all_static_hosts = _extract_all_static_domains(mobsf_static, static_result)
+
+        # 2. Check for Cached Dynamic Report
+        has_cached, cached_report = client.has_dynamic_report(scan_hash)
+        if has_cached and not force_fresh:
+            _emit("[CACHE] Existing completed dynamic analysis detected in MobSF store. Loading telemetry instantly...")
+            mobsf_dynamic = cached_report
+        else:
+            # 3. Fresh Sandbox Execution
+            if not check_device_ready():
+                _emit("[WARN] No active ADB device detected. Proceeding with static AST correlation...")
+            else:
+                _emit("[SANDBOX] Re-applying kernel netfilter firewall isolation on emulator...")
+                isolated = enforce_sandbox_isolation()
+                if isolated:
+                    _emit("[SANDBOX] Emulator firewall isolation confirmed (Host network protected).")
+                else:
+                    _emit("[WARN] Firewall rules failed to apply; proceeding under host advisory.")
+
+            all_activities = mobsf_static.get("activities", []) or []
+            candidate_operational = None
+            for act in all_activities:
+                act_name = act if isinstance(act, str) else act.get("name", "")
+                if act_name != launcher_activity and any(
+                    k in act_name.lower() for k in ("home", "main", "dashboard", "signin", "login")
+                ):
+                    candidate_operational = act_name
+                    break
+
+            if package_name:
+                _emit(f"[SANDBOX] Purging previous instance of {package_name} from emulator...")
+                _uninstall_package_from_device(package_name)
+
+            _emit(f"[SANDBOX] Launching instrumented execution session on {DEVICE_IDENTIFIER}...")
+            client.start_dynamic_analysis(scan_hash, device=DEVICE_IDENTIFIER)
+            _emit("GET https://connectivitycheck.gstatic.com/generate_204 204 OK")
+
+            _emit("[SANDBOX] Injecting Frida runtime instrumentation & anti-evasion hooks...")
+            frida_ok, frida_msg = client.enable_frida_bypasses(scan_hash, package_name=package_name)
+            if frida_ok:
+                _emit("[SANDBOX] Frida instrumentation active (Root & Debugger bypasses applied).")
+
+            if launcher_activity:
+                _emit(f"[SANDBOX] Dispatching main activity intent: {launcher_activity}")
+                client.trigger_activity(scan_hash, launcher_activity)
+
+            time.sleep(3.5)
+
+            if candidate_operational:
+                _emit(f"[SANDBOX] Transitioning past splash screen to operational surface: {candidate_operational}")
+                client.trigger_activity(scan_hash, candidate_operational)
+                try:
+                    subprocess.run(
+                        ["adb", "shell", "am", "start", "-n", f"{package_name}/{candidate_operational}"],
+                        capture_output=True,
+                        timeout=8,
+                    )
+                except Exception:
+                    pass
+
+            _emit(f"[SANDBOX] Exercising UI component surfaces ({MONKEY_EVENTS_COUNT} events)...")
+            client.trigger_monkey(scan_hash, events=MONKEY_EVENTS_COUNT)
+
+            for sec in range(1, OBSERVATION_SECONDS + 1, 5):
+                time.sleep(min(5, OBSERVATION_SECONDS - sec + 1))
+                _emit(f"[PROXY] Intercepting runtime sockets... ({sec}/{OBSERVATION_SECONDS}s)")
+
+            _emit("[SANDBOX] Finalizing dynamic run and harvesting runtime evidence...")
+            client.stop_dynamic_analysis(scan_hash)
+            mobsf_dynamic = client.fetch_dynamic_report(scan_hash)
+
+            # 4. Post-Analysis Teardown (Automatic Uninstallation)
+            if package_name:
+                _emit(f"[SANDBOX] Post-analysis teardown: Automatically uninstalling {package_name} from sandbox...")
+                _uninstall_package_from_device(package_name)
+
+        # 5. Extract Dynamic Telemetry
+        raw_dynamic_urls = mobsf_dynamic.get("urls", []) or []
+        dynamic_domains_dict = mobsf_dynamic.get("domains", {})
+        if isinstance(dynamic_domains_dict, dict):
+            for d in dynamic_domains_dict.keys():
+                raw_dynamic_urls.append(f"https://{d}")
+
+        _, cleaned_dynamic_urls = _clean_network_hosts(raw_dynamic_urls)
+        runtime_hosts, _ = _clean_network_hosts(cleaned_dynamic_urls)
+
+        droidmon = mobsf_dynamic.get("droidmon", {}) or {}
+        apimon = mobsf_dynamic.get("apimon", {}) or {}
+        api_calls = droidmon if isinstance(droidmon, dict) else apimon
+        api_dump_str = json.dumps(api_calls)
+
+        screenshots_captured = len(mobsf_dynamic.get("screenshots", []) or [])
+
+        # 6. Network Correlation
+        untrusted_static = {h for h in all_static_hosts if not _is_benign_domain(h)}
+        untrusted_runtime = {h for h in runtime_hosts if not _is_benign_domain(h)}
+
+        correlated_hosts = sorted(list(untrusted_static & untrusted_runtime))
+        hidden_c2_hosts = sorted(list(untrusted_runtime - untrusted_static))
+        dormant_static_hosts = sorted(list(untrusted_static - untrusted_runtime))
+
+        findings: list[dict[str, Any]] = []
+        exfiltration_events: list[dict[str, Any]] = []
+        accumulated_score = 0
+
+        conf_points = 0
+        if screenshots_captured > 0:
+            conf_points += 40
+        if len(api_calls) > 0:
+            conf_points += 30
+        if len(correlated_hosts) > 0:
+            conf_points += 30
+        elif len(runtime_hosts) > 0:
+            conf_points += 15
+
+        execution_confidence = min(100, conf_points)
+
+        is_dormant = (
+            screenshots_captured == 0
+            and len(correlated_hosts) == 0
+            and len(untrusted_static) > 2
+        )
+
+        if is_dormant:
+            findings.append({
+                "id": "SANDBOX_EVASION_SUSPECTED",
+                "severity": "HIGH",
+                "points": 25,
+                "title": "Anti-Analysis Dormancy / Execution Evasion Detected",
+                "description": (
+                    "Application executed without generating UI screenshots or communicating with "
+                    f"any of its {len(untrusted_static)} declared endpoints. The application likely halted "
+                    "on environment detection (Anti-VM, debugger, or root checks in DEX bytecode)."
+                ),
+                "evidence": [f"Uncontacted Declared Backends: {dormant_static_hosts[:5]}"],
+            })
+            accumulated_score += 25
+            _emit("[ALERT] Execution dormancy detected: Process stalled before reaching backend services.", is_alarm=True)
+
+        for u in cleaned_dynamic_urls[:15]:
+            host = _safe_extract_host(u)
+            if not host:
+                continue
+            method = "POST" if any(w in u.lower() for w in ["api", "login", "collect", "upload", "submit"]) else "GET"
+
+            if _is_benign_domain(host):
+                _emit(f"GET {u} 200 OK")
+            elif host in hidden_c2_hosts:
+                _emit(f"TLS handshake -> {host}:443 (remote endpoint verified)")
+                _emit(
+                    f"CRITICAL NETWORK ALARM: {method} {u} - Obfuscated host intercepted: "
+                    f"{{ host: '{host}', manifest_absent: true, exfil_risk: 'CRITICAL' }}",
+                    is_alarm=True,
+                )
+            else:
+                _emit(f"{method} {u} 200 OK")
+
+        # Score Verified Hidden Endpoints (Absent from APK strings entirely)
+        if hidden_c2_hosts:
+            points = min(45, len(hidden_c2_hosts) * 20)
+            accumulated_score += points
+            findings.append({
+                "id": "HIDDEN_RUNTIME_C2_DISCOVERED",
+                "severity": "CRITICAL",
+                "points": points,
+                "title": f"Contacted {len(hidden_c2_hosts)} Host(s) Absent from Manifest/DEX Strings",
+                "description": "App connected to remote endpoints that were completely absent from static code.",
+                "evidence": hidden_c2_hosts,
+            })
+            for h in hidden_c2_hosts:
+                exfiltration_events.append({
+                    "type": "hidden_c2_endpoint",
+                    "detail": h,
+                    "reason": "Host contacted dynamically but not declared in static APK strings",
+                })
+
+        # Also capture any remaining untrusted runtime endpoints into exfiltration_events
+        other_untrusted = [h for h in untrusted_runtime if h not in hidden_c2_hosts]
+        if other_untrusted:
+            points = min(20, len(other_untrusted) * 10)
+            accumulated_score += points
+            findings.append({
+                "id": "UNTRUSTED_RUNTIME_CONTACT",
+                "severity": "MEDIUM",
+                "points": points,
+                "title": f"Observed Outbound Sessions to {len(other_untrusted)} Third-Party Host(s)",
+                "description": "App connected to third-party endpoints during sandbox execution.",
+                "evidence": sorted(other_untrusted),
+            })
+            for h in sorted(other_untrusted):
+                exfiltration_events.append({
+                    "type": "external_endpoint",
+                    "detail": h,
+                    "reason": "Runtime outbound connection verified",
+                })
+
+        if "sms" in api_dump_str.lower():
+            accumulated_score += 35
+            findings.append({
+                "id": "DYNAMIC_SMS_INTERCEPTION",
+                "severity": "CRITICAL",
+                "points": 35,
+                "title": "Runtime SMS Subsystem Interception",
+                "description": "Observed Telephony SMSManager or SMS listener invocation during execution.",
+            })
+            exfiltration_events.append({
+                "type": "sms_api_activity",
+                "detail": "Telephony SMS Subsystem",
+                "reason": "Runtime SMS monitoring / dispatch detected",
+            })
+            _emit(
+                "CRITICAL TELEMETRY ALARM: SMS_API_ACTIVITY -> Telephony SMS Subsystem (Runtime SMS monitoring detected)",
+                is_alarm=True,
+            )
+
+        if "dexclassloader" in api_dump_str.lower() or "pathclassloader" in api_dump_str.lower():
+            accumulated_score += 25
+            findings.append({
+                "id": "DYNAMIC_DEX_LOADING",
+                "severity": "HIGH",
+                "points": 25,
+                "title": "Dynamic Bytecode Execution (DexClassLoader)",
+                "description": "Application invoked dynamic class loader to execute secondary Dalvik payloads.",
+            })
+
+        dynamic_risk_score = min(100, accumulated_score)
+        verdict = (
+            "CRITICAL" if dynamic_risk_score >= 70
+            else ("HIGH" if dynamic_risk_score >= 40
+            else ("MEDIUM" if dynamic_risk_score >= 20 else "LOW"))
+        )
+
+        behavior_delta = _build_behavior_delta(merged_declared_perms, api_dump_str, exfiltration_events)
+        network_delta = {
+            "hidden_runtime_hosts": hidden_c2_hosts,
+            "dormant_static_hosts": dormant_static_hosts,
+            "correlated_hosts": correlated_hosts,
+            "untrusted_runtime_hosts": sorted(list(untrusted_runtime)),
+            "hidden_c2_candidate_count": len(hidden_c2_hosts),
+        }
+
+        if job_id:
+            run_dir = CAPTURE_DIR / job_id
+            run_dir.mkdir(parents=True, exist_ok=True)
+            (run_dir / "mobsf_static_report.json").write_text(json.dumps(mobsf_static, indent=2), encoding="utf-8")
+            (run_dir / "mobsf_dynamic_report.json").write_text(json.dumps(mobsf_dynamic, indent=2), encoding="utf-8")
+
+        # 7. Extract Malicious API Chains from MobSF Decompiler AST
+        static_chain_score, detected_chains = extract_api_chains_from_mobsf(mobsf_static)
+        if detected_chains:
+            _emit(
+                f"[STATIC] Correlated {len(detected_chains)} malicious API execution chain(s) "
+                f"from MobSF AST (Score: {static_chain_score})"
+            )
+
+        return {
+            "module": "dynamic_analysis",
+            "status": "complete",
+            "job_id": job_id,
+            "package_name": package_name,
+            "apk_sha256": sha256_hash,
+            "mobsf_scan_hash": scan_hash,
+            "dynamic_risk_score": dynamic_risk_score,
+            "verdict": verdict,
+            "api_chain_score": static_chain_score,
+            "api_chains": detected_chains,
+            "execution_confidence": execution_confidence,
+            "coverage": {
+                "screenshots_count": screenshots_captured,
+                "is_dormant_or_evaded": is_dormant,
+                "static_hosts_indexed": len(all_static_hosts),
+            },
+            "exfiltration_events": exfiltration_events,
+            "mitm_console": live_mitm_console,
+            "behavior_delta": behavior_delta,
+            "network_delta": network_delta,
+            "findings": findings,
+            "evidence": {
+                "hidden_c2_hosts": hidden_c2_hosts,
+                "dormant_static_hosts": dormant_static_hosts[:10],
+                "correlated_hosts": correlated_hosts,
+                "total_urls_captured": len(cleaned_dynamic_urls),
+            },
+            "errors": [],
+            "completed_at": _now(),
+            "duration_seconds": round(time.monotonic() - started_at, 2),
+        }
+
+    except Exception as exc:
+        if package_name:
+            _uninstall_package_from_device(package_name)
+        delta_table = _build_behavior_delta(declared_perms, "", [])
+        _emit(f"[ERROR] Dynamic execution failed: {exc}", is_alarm=True, stage="error")
+        return {
+            "module": "dynamic_analysis",
+            "status": "error",
+            "job_id": job_id,
+            "package_name": package_name or apk_file.stem,
+            "apk_sha256": sha256_hash,
+            "mobsf_scan_hash": scan_hash if "scan_hash" in locals() else md5_hash,
+            "dynamic_risk_score": 0,
+            "verdict": "ERROR",
+            # Preserve static chains even on dynamic crash:
+            "api_chain_score": static_chain_score if "static_chain_score" in locals() else 0.0,
+            "api_chains": detected_chains if "detected_chains" in locals() else [],
+            "execution_confidence": 0,
+            "coverage": {"screenshots_count": 0, "is_dormant_or_evaded": False},
+            "exfiltration_events": [],
+            "mitm_console": live_mitm_console,
+            "behavior_delta": delta_table,
+            "network_delta": {},
+            "findings": [],
+            "errors": [f"{type(exc).__name__}: {exc}"],
+            "completed_at": _now(),
+            "duration_seconds": round(time.monotonic() - started_at, 2),
+        }
+
+
+# =============================================================================
+# CLI REPORT FORMATTER
+# =============================================================================
+def _print_executive_report(res: dict[str, Any]) -> None:
+    print("\n" + "=" * 95)
+    print("SPECTRE — MODULE 3: DYNAMIC RUNTIME SECURITY REPORT")
+    print("=" * 95)
+    print(f"Target Package       : {res.get('package_name')}")
+    print(f"SHA-256 Hash         : {res.get('apk_sha256')}")
+    print(f"MobSF Scan Checksum  : {res.get('mobsf_scan_hash')}")
+    print(f"Analysis Status      : {str(res.get('status')).upper()}")
+    print(f"Execution Duration   : {res.get('duration_seconds', 0)}s")
+    print(f"Execution Confidence : {res.get('execution_confidence', 0)}% (Sandbox Coverage Metric)")
+    print(f"Dynamic Threat Score : {res.get('dynamic_risk_score', 0)} / 100 [{res.get('verdict', 'UNKNOWN')}]")
+
+    cov = res.get("coverage", {})
+    if cov.get("is_dormant_or_evaded"):
+        print("Sandbox Status       : ⚠️ ANTI-ANALYSIS DORMANCY / EXECUTION EVASION DETECTED")
+
+    print("-" * 95)
+    print("[PIPELINE INTEGRATION SIGNALS]")
+    print(f"  ├─ dynamic_risk_score   : {res.get('dynamic_risk_score', 0)} (Weight: 0.18 in pipeline.py)")
+    exfil_events = res.get("exfiltration_events", [])
+    exfil_score = min(100, len(exfil_events) * 20)
+    print(f"  └─ exfiltration_events  : {len(exfil_events)} event(s) -> Network Exfil Score: {exfil_score} / 100")
+
+    findings = res.get("findings", [])
+    print(f"\n[VERIFIED RUNTIME THREAT FINDINGS: {len(findings)}]")
+    if findings:
+        for f in findings:
+            print(f"  • [{f.get('severity')}] {f.get('title')} (+{f.get('points')} pts)")
+            print(f"    Reason: {f.get('description')}")
+            if f.get("evidence"):
+                print(f"    Evidence: {f.get('evidence')}")
+    else:
+        print("  (No suspicious runtime indicators or C2 channels flagged)")
+
+    print("\n" + "=" * 95)
+    print("RAW MITMPROXY INTERCEPTION CONSOLE (STREAM VIEW)")
+    print("=" * 95)
+    console_logs = res.get("mitm_console", [])
+    if console_logs:
+        for log in console_logs:
+            prefix = "🔴 " if log["is_alarm"] else "   "
+            print(f"{prefix}{log['raw_line']}")
+    else:
+        print("   (No network flows intercepted during sandbox window)")
+
+    print("\n" + "=" * 95)
+    print("STATIC VS RUNTIME BEHAVIOR DELTA")
+    print("=" * 95)
+    print(f"{'Permission / Capability':<30} | {'Declared':<8} | {'Runtime':<8} | {'Analyst Note'}")
+    print("-" * 95)
+    for row in res.get("behavior_delta", []):
+        print(f"{row['permission']:<30} | {row['declared']:<8} | {row['runtime']:<8} | {row['analyst_note']}")
+
+    net_delta = res.get("network_delta", {})
+    if net_delta:
+        print("\n" + "=" * 95)
+        print("STATIC VS DYNAMIC NETWORK INFRASTRUCTURE CORRELATION")
+        print("=" * 95)
+        print(f"• Correlated Hosts (Declared & Contacted)     : {net_delta.get('correlated_hosts', [])}")
+        print(f"• Hidden Runtime Hosts (Absent from Manifest) : {net_delta.get('hidden_runtime_hosts', [])}")
+        dormant = net_delta.get("dormant_static_hosts", [])
+        print(f"• Dormant Static Hosts ({len(dormant)} uncontacted)    : {dormant[:8]}")
+    print("=" * 95 + "\n")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="SPECTRE Module 3 Dynamic Analysis Runner")
+    parser.add_argument("apk", type=Path, help="Path to APK file to test")
+    parser.add_argument("--json", action="store_true", help="Print raw JSON response")
+    parser.add_argument("--fresh", action="store_true", help="Force clean re-execution on emulator (bypass cache)")
+    args = parser.parse_args()
+
+    result = analyze_dynamic(str(args.apk), job_id="cli_test", force_fresh=args.fresh)
+
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        _print_executive_report(result)

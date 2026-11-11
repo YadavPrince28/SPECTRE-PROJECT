@@ -25,104 +25,142 @@ const TONE_STYLES: Record<PipelineStep["tone"], { color: string; icon: typeof Cp
 }
 
 export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [status, setStatus] = useState<"idle" | "running" | "done">("idle")
+  const [status, setStatus] = useState<"idle" | "uploading" | "running" | "done">("idle")
   const [progress, setProgress] = useState(0)
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [fileName, setFileName] = useState("uniontrust_secure_v3.2.apk")
+  const [serverLog, setServerLog] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function startPipeline(file?: File) {
-    if (status === "running") return
-    if(file){
-      setSelectedFile(file)
+    if (status === "uploading" || status === "running") return
+
+    if (file) {
       setFileName(file.name)
-    }else{
-      setSelectedFile(null)
+      setStatus("uploading")
+      setProgress(10)
+      setVisibleSteps(1)
+      uploadToBackend(file)
+    } else {
       setFileName("uniontrust_secure_v3.2.apk")
-    }
-
-    setStatus("running")
-    setProgress(0)
-    setVisibleSteps(0)
-  }
-
-  async function uploadToBackend(file: File){
-    try{
-      const formdata = new FormData()
-      formdata.append("file", file)
-      
-      const uploadResponse = await fetch("http://localhost:8000/analyze", {method: "POST", body: formdata, })
-      if(!uploadResponse.ok){
-        throw new Error(`Upload failed with status: ${uploadResponse.status}`)
-      }
-      const uploadData = await uploadResponse.json()
-      const jobId = uploadData.job_id
-
-      const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
-      ws.onopen = () => {
-        console.log(`[SPECTRE] WebSocket connected. Job: ${jobId}`)
-      }
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        console.log(`[SPECTRE] Status update: ${data.status}`)
-
-        if (data.status === "complete"){
-          ws.close()
-          setTimeout(() => onComplete(data.result), 500)
-        }
-
-        if(data.status === "error"){
-          console.error(`[SPECTRE] Pipeline error: ${data.error}`)
-          ws.close()
-          setTimeout(() => onComplete(null), 500)
-        }
-      }
-
-      ws.onerror = () => {
-        console.error("[SPECTRE] WebSocket connection failed")
-        setTimeout(() => onComplete(null), 500)
-      }
-      ws.onclose = () => {
-        console.log (`[SPECTRE] WebSocket closed for job: ${jobId}`)
-      }
-
-    } catch (error){
-      console.error("[SPECTRE] Upload error:", error)
-      setTimeout(() => onComplete(null), 500)
+      setStatus("running")
+      setProgress(0)
+      setVisibleSteps(0)
+      simulateSampleRun()
     }
   }
 
-  const [fileName, setFileName] = useState("uniontrust_secure_v3.2.apk")
-
-  useEffect(() => {
-    if (status !== "running") return
+  function simulateSampleRun() {
     const stepTimers: ReturnType<typeof setTimeout>[] = []
     PIPELINE_STEPS.forEach((_, i) => {
       stepTimers.push(
-        setTimeout(() => setVisibleSteps(i + 1), 600 + i * 900),
+        setTimeout(() => setVisibleSteps(i + 1), 500 + i * 800),
       )
     })
     const start = Date.now()
-    const total = 600 + PIPELINE_STEPS.length * 900 + 600
+    const total = 500 + PIPELINE_STEPS.length * 800 + 500
     const interval = setInterval(() => {
       const pct = Math.min(100, Math.round(((Date.now() - start) / total) * 100))
       setProgress(pct)
       if (pct >= 100) {
         clearInterval(interval)
         setStatus("done")
-        if(selectedFile){
-          uploadToBackend(selectedFile)
-        }else{
-          setTimeout(()=> onComplete(null), 900)
-        }
+        setTimeout(() => onComplete(null), 800)
       }
     }, 60)
-    return () => {
-      stepTimers.forEach(clearTimeout)
-      clearInterval(interval)
+  }
+
+  async function uploadToBackend(file: File) {
+    try {
+      setServerLog("Dispatching archive to SPECTRE analysis pipeline...")
+      const formdata = new FormData()
+      formdata.append("file", file)
+
+      const uploadResponse = await fetch("http://localhost:8000/analyze", {
+        method: "POST",
+        body: formdata,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed with status: ${uploadResponse.status}`)
+      }
+
+      const uploadData = await uploadResponse.json()
+      const jobId = uploadData.job_id
+      setStatus("running")
+      setProgress(25)
+      setVisibleSteps(2)
+
+      const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
+
+      ws.onopen = () => {
+        setServerLog(`Pipeline stream connected (Job ID: ${jobId})`)
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+
+          if (data.latest_log) {
+            setServerLog(data.latest_log)
+          }
+
+          if (data.status === "running") {
+            setProgress((prev) => Math.min(90, prev + 15))
+            setVisibleSteps((prev) => Math.min(PIPELINE_STEPS.length, prev + 1))
+          }
+
+          if (data.status === "complete") {
+            setProgress(100)
+            setVisibleSteps(PIPELINE_STEPS.length)
+            setStatus("done")
+            setServerLog("Analysis complete. Serializing intelligence vectors...")
+            ws.close()
+            setTimeout(() => onComplete(data.result), 600)
+          }
+
+          if (data.status === "error") {
+            console.error(`[SPECTRE] Pipeline error: ${data.error}`)
+            setServerLog(`Error: ${data.error}`)
+            ws.close()
+            setStatus("idle")
+          }
+        } catch (err) {
+          console.error("[SPECTRE] Parse error on WS payload:", err)
+        }
+      }
+
+      ws.onerror = () => {
+        console.error("[SPECTRE] WebSocket connection failed")
+        fallbackPollResult(jobId)
+      }
+
+      ws.onclose = () => {
+        console.log(`[SPECTRE] WebSocket closed for job: ${jobId}`)
+      }
+    } catch (error) {
+      console.error("[SPECTRE] Ingestion error:", error)
+      setServerLog("Ingestion failed. Ensure backend service is running on port 8000.")
+      setStatus("idle")
     }
-  }, [status, onComplete])
+  }
+
+  async function fallbackPollResult(jobId: string) {
+    try {
+      const resp = await fetch(`http://localhost:8000/result/${jobId}`)
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.status === "complete") {
+          setProgress(100)
+          setStatus("done")
+          setTimeout(() => onComplete(data.result), 600)
+        }
+      }
+    } catch (e) {
+      console.error("[SPECTRE] Fallback poll error:", e)
+    }
+  }
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
@@ -139,7 +177,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           e.preventDefault()
           setDragging(false)
           const file = e.dataTransfer.files?.[0]
-          if (file)startPipeline(file)
+          if (file) startPipeline(file)
         }}
         className={cn(
           "glass-card relative flex flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-16 text-center transition-all",
@@ -149,13 +187,13 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
         )}
       >
         <div className="spectre-grid-bg pointer-events-none absolute inset-0 opacity-40" />
-        {status === "running" && (
+        {(status === "running" || status === "uploading") && (
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-scan" />
         )}
 
         <div className="relative">
           <div className="flex size-20 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10">
-            {status === "running" ? (
+            {status === "running" || status === "uploading" ? (
               <Loader2 className="size-9 animate-spin text-cyan-400" />
             ) : (
               <UploadCloud className="size-9 text-cyan-400" />
@@ -191,11 +229,10 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
             type="file"
             accept=".apk"
             className="hidden"
-           onChange={(e) =>{
-            const file = e.target.files?.[0]
-            if(file) startPipeline(file)
-           } 
-           }
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) startPipeline(file)
+            }}
           />
         </div>
 
@@ -207,7 +244,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
         )}
       </div>
 
-      {/* Pipeline telemetry + progress */}
+      {/* Telemetry & progress */}
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -232,25 +269,35 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           {status === "idle" ? (
             <p className="text-slate-600">{"// Awaiting APK ingestion — pipeline standing by..."}</p>
           ) : (
-            PIPELINE_STEPS.slice(0, visibleSteps).map((step, i) => {
-              const tone = TONE_STYLES[step.tone]
-              const done = i < visibleSteps - 1 || status === "done"
-              return (
-                <div key={step.tag} className="flex items-start gap-2 leading-relaxed">
-                  <tone.icon className={cn("mt-0.5 size-3.5 shrink-0", tone.color)} />
-                  <span className={cn("font-semibold", tone.color)}>[{step.tag}]</span>
-                  <span className="flex-1 text-slate-300">{step.message}</span>
-                  <span className={cn("shrink-0", done ? "text-emerald-400" : "text-amber-400")}>
-                    {done ? "OK" : "···"}
-                  </span>
+            <>
+              {PIPELINE_STEPS.slice(0, visibleSteps).map((step, i) => {
+                const tone = TONE_STYLES[step.tone]
+                const done = i < visibleSteps - 1 || status === "done"
+                return (
+                  <div key={step.tag} className="flex items-start gap-2 leading-relaxed">
+                    <tone.icon className={cn("mt-0.5 size-3.5 shrink-0", tone.color)} />
+                    <span className={cn("font-semibold", tone.color)}>[{step.tag}]</span>
+                    <span className="flex-1 text-slate-300">{step.message}</span>
+                    <span className={cn("shrink-0", done ? "text-emerald-400" : "text-amber-400")}>
+                      {done ? "OK" : "···"}
+                    </span>
+                  </div>
+                )
+              })}
+
+              {serverLog && (
+                <div className="flex items-center gap-2 border-t border-slate-800/80 pt-2 font-mono text-[11px] text-cyan-400/90">
+                  <span className="size-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span>{serverLog}</span>
                 </div>
-              )
-            })
+              )}
+            </>
           )}
+
           {status === "done" && (
             <div className="flex items-center gap-2 pt-1 text-emerald-400">
               <span className="font-semibold">[COMPLETE]</span>
-              <span>Behavioral metrics serialized. Routing to Analysis Terminal...</span>
+              <span>Dynamic behavioral metrics serialized. Routing to Analysis Terminal...</span>
             </div>
           )}
         </div>

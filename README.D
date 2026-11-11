@@ -1,2 +1,0 @@
-##  SPECTRE-PROJECT
-### AI-powered Android fraud analysis platform.<br> Detects banking malware via static analysis, behavioral DNA fingerprinting, dynamic sandboxing, social engineering extraction, and GenAI threat intelligence.

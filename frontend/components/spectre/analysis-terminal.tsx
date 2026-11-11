@@ -18,7 +18,7 @@ import {
 import { RiskGauge } from "./risk-gauge"
 import { PhoneFrame } from "./phone-frame"
 
-export function AnalysisTerminal({result}: {result: any}) {
+export function AnalysisTerminal({ result }: { result: any }) {
   const riskScore = result?.final_score?.score ?? 94
   const verdict = result?.final_score?.verdict ?? "CRITICAL"
 
@@ -27,57 +27,31 @@ export function AnalysisTerminal({result}: {result: any}) {
     result?.static?.package ??
     "Unknown APK"
 
-    const authenticity =
-    result?.static?.authenticity ?? {}
+  const authenticity = result?.static?.authenticity ?? {}
+  const authenticityStatus = authenticity?.status ?? "UNVERIFIED"
+  const authenticityBank = authenticity?.bank_name ?? ""
 
-  const authenticityStatus =
-    authenticity?.status ?? "UNVERIFIED"
-
-  const authenticityBank =
-    authenticity?.bank_name ?? "" 
-  
-  const permissionScore =
-    result?.static?.permission_score ?? 0
-
-  const chainScore =
-    result?.static?.chain_score ?? 0
-
-  const dangerousPermissions =
-    result?.static?.permission_data?.dangerous_permissions ??
-    result?.static?.dangerous_permissions ??
-    []
-
-  const triggeredCombos =
-    result?.static?.permission_data?.triggered_combos ??
-    result?.static?.combo_alerts ??
-    []
-
-  const exfiltrationEvents =
-    result?.dynamic?.exfiltration_events ?? []
-  
   return (
     <div className="flex flex-col gap-6">
-        <Header
+      <Header
         packageName={packageName}
         authenticityStatus={authenticityStatus}
         authenticityBank={authenticityBank}
-        />
-       <QuickMetrics
+      />
+      <QuickMetrics
         result={result}
         riskScore={riskScore}
         verdict={verdict}
       />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <LeftColumn 
-        result={result}
-        riskScore={riskScore}
-        />
-        <RightColumn />
+        <LeftColumn result={result} riskScore={riskScore} />
+        <RightColumn result={result} />
       </div>
 
-      <MitmConsole />
-      <RuntimeDelta />
+      {/* Dynamic Telemetry & Behavior Delta connected to backend output */}
+      <MitmConsole dynamic={result?.dynamic} />
+      <RuntimeDelta dynamic={result?.dynamic} />
     </div>
   )
 }
@@ -99,29 +73,27 @@ function Header({
         </span>
         <h2 className="text-xl font-semibold text-slate-100">Advanced Analysis Terminal</h2>
       </div>
-            <p className="text-sm text-slate-500">
-              Multi-dimensional structural fingerprinting and live runtime behavioral telemetry for{" "}
-              <span className="font-mono text-slate-400">{packageName}</span>
-
-              <span
-                className={cn(
-                  "ml-2 inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold",
-                  authenticityStatus === "VERIFIED"
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                    : authenticityStatus === "CERTIFICATE_MISMATCH"
-                      ? "border-red-500/30 bg-red-500/10 text-red-400"
-                      : "border-slate-700 bg-slate-800/50 text-slate-400",
-                )}
-              >
-                AUTHENTICITY: {authenticityStatus}
-              </span>
-
-              {authenticityBank && (
-                <span className="ml-2 font-mono text-[10px] text-slate-500">
-                  · {authenticityBank}
-                </span>
-              )}.
-            </p>
+      <p className="text-sm text-slate-500">
+        Multi-dimensional structural fingerprinting and live runtime behavioral telemetry for{" "}
+        <span className="font-mono text-slate-400">{packageName}</span>
+        <span
+          className={cn(
+            "ml-2 inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold",
+            authenticityStatus === "VERIFIED"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+              : authenticityStatus === "CERTIFICATE_MISMATCH"
+                ? "border-red-500/30 bg-red-500/10 text-red-400"
+                : "border-slate-700 bg-slate-800/50 text-slate-400",
+          )}
+        >
+          AUTHENTICITY: {authenticityStatus}
+        </span>
+        {authenticityBank && (
+          <span className="ml-2 font-mono text-[10px] text-slate-500">
+            · {authenticityBank}
+          </span>
+        )}.
+      </p>
     </div>
   )
 }
@@ -136,111 +108,117 @@ function QuickMetrics({
   verdict: string
 }) {
   const behavioral = result?.behavioral ?? {}
+  const closestFamily = behavioral?.closest_family ?? "No behavioral match"
+  const behavioralScore = behavioral?.behavioral_score ?? 0
+  const classScore = behavioral?.class_idf_score ?? 0
+  const packageScore = behavioral?.package_markov_score ?? 0
+  const margin = behavioral?.top1_margin_percent ?? 0
+  
+  // Dual-Layer Network Threat Resolution
+  const exfiltrationEvents = result?.dynamic?.exfiltration_events ?? []
+  const activeStreams = result?.dynamic?.active_streams?.length ?? exfiltrationEvents.length
+  const latentHosts =
+    result?.dynamic?.latent_c2_targets ??
+    result?.dynamic?.network_delta?.dormant_static_hosts ??
+    result?.static?.c2_urls ??
+    []
+  const latentCount = latentHosts.length
 
-  const closestFamily =
-    behavioral?.closest_family ??
-    "No behavioral match"
+  const networkScore =
+    result?.final_score?.component_scores?.network_exfiltration ??
+    (exfiltrationEvents.length > 0 ? 100 : latentCount > 0 ? 25 : 0)
 
-  const behavioralScore =
-    behavioral?.behavioral_score ?? 0
-
-  const classScore =
-    behavioral?.class_idf_score ?? 0
-
-  const packageScore =
-    behavioral?.package_markov_score ?? 0
-
-  const margin =
-    behavioral?.top1_margin_percent ?? 0
-
-  const exfiltrationEvents =
-    result?.dynamic?.exfiltration_events ?? []
+  const isNetworkRisk = exfiltrationEvents.length > 0 || networkScore > 0 || latentCount > 0
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
       {/* FINAL RISK */}
       <div className="glass-card animate-breathe-crimson relative overflow-hidden rounded-2xl border border-rose-500/40 p-5">
-
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Composite Risk Vector
         </p>
-
         <div className="mt-2 flex items-end gap-2">
           <span className="font-mono text-4xl font-bold text-rose-400">
             {Math.round(riskScore)}
           </span>
-
-          <span className="mb-1 font-mono text-sm text-slate-500">
-            /100
-          </span>
+          <span className="mb-1 font-mono text-sm text-slate-500">/100</span>
         </div>
-
         <span className="mt-3 inline-flex items-center gap-1 rounded-md bg-rose-500/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-rose-400">
           <CircleAlert className="size-3" />
           {verdict}
         </span>
       </div>
 
-
       {/* BEHAVIORAL DNA */}
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
-
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Behavioral Graph Match
         </p>
-
         <div className="mt-2 flex items-center gap-3">
           <GitBranch className="size-7 text-cyan-400" />
-
-          <span className="text-lg font-semibold text-slate-100">
-            {closestFamily}
-          </span>
+          <span className="text-lg font-semibold text-slate-100">{closestFamily}</span>
         </div>
-
         <p className="mt-3 font-mono text-xs text-cyan-400">
           Behavioral Similarity: {behavioralScore.toFixed(2)}%
         </p>
-
         <p className="mt-1 font-mono text-[10px] text-slate-500">
-          Class-IDF: {(classScore * 100).toFixed(2)}%
-          {" · "}
-          Package Markov: {(packageScore * 100).toFixed(2)}%
+          Class-IDF: {(classScore * 100).toFixed(2)}% · Package Markov: {(packageScore * 100).toFixed(2)}%
         </p>
-
         <p className="mt-1 font-mono text-[10px] text-slate-500">
           Top-1 margin: {margin.toFixed(2)}%
         </p>
       </div>
 
-
-      {/* NETWORK */}
-      <div className="glass-card rounded-2xl border border-amber-500/40 p-5">
-
+      {/* DUAL-LAYER NETWORK EXFILTRATION STATUS */}
+      <div
+        className={cn(
+          "glass-card rounded-2xl p-5 border transition-colors",
+          isNetworkRisk
+            ? exfiltrationEvents.length > 0
+              ? "border-rose-500/40"
+              : "border-amber-500/40"
+            : "border-slate-800",
+        )}
+      >
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Network Exfiltration Status
         </p>
 
-        {exfiltrationEvents.length > 0 ? (
+        {isNetworkRisk ? (
           <>
             <div className="mt-2 flex items-center gap-2">
-              <AlertTriangle className="size-6 text-amber-400" />
-
-              <span className="text-base font-bold text-amber-400">
-                EXFILTRATION DETECTED
+              <AlertTriangle
+                className={cn(
+                  "size-6",
+                  exfiltrationEvents.length > 0 ? "text-rose-400" : "text-amber-400",
+                )}
+              />
+              <span
+                className={cn(
+                  "text-base font-bold tracking-tight",
+                  exfiltrationEvents.length > 0 ? "text-rose-400" : "text-amber-400",
+                )}
+              >
+                {exfiltrationEvents.length > 0
+                  ? "EXFILTRATION DETECTED"
+                  : "DORMANT ENDPOINTS DISCOVERED"}
               </span>
             </div>
 
-            <p className="mt-3 font-mono text-xs text-slate-500">
-              {exfiltrationEvents.length} event
-              {exfiltrationEvents.length !== 1 ? "s" : ""} captured
+            <p className="mt-3 font-mono text-xs text-slate-300">
+              {exfiltrationEvents.length > 0
+                ? `${exfiltrationEvents.length} active runtime stream(s) intercepted`
+                : `${latentCount} uncontacted external host(s) identified in binary`}
+            </p>
+
+            <p className="mt-1 font-mono text-[10px] text-slate-500">
+              {activeStreams} active stream(s) · {latentCount} latent target(s)
             </p>
           </>
         ) : (
           <>
             <div className="mt-2 flex items-center gap-2">
               <Network className="size-6 text-emerald-400" />
-
               <span className="text-base font-bold text-emerald-400">
                 NO EXFILTRATION
               </span>
@@ -249,21 +227,18 @@ function QuickMetrics({
             <p className="mt-3 font-mono text-xs text-slate-500">
               No suspicious POST exfiltration events captured
             </p>
+
+            <p className="mt-1 font-mono text-[10px] text-slate-500">
+              {activeStreams} active runtime streams · {latentCount} latent targets
+            </p>
           </>
         )}
       </div>
-
     </div>
   )
 }
 
-function LeftColumn({
-  result,
-  riskScore,
-}: {
-  result: any
-  riskScore: number
-}) {
+function LeftColumn({ result, riskScore }: { result: any; riskScore: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
@@ -287,9 +262,7 @@ function LeftColumn({
 }
 
 function PermissionMatrix({ result }: { result: any }) {
-  const permissions =
-    result?.static?.permission_heatmap ?? []
-
+  const permissions = result?.static?.permission_heatmap ?? []
   const [showAll, setShowAll] = useState(false)
 
   const highRiskPermissions = permissions.filter((p: any) => {
@@ -298,13 +271,10 @@ function PermissionMatrix({ result }: { result: any }) {
   })
 
   const criticalCount = permissions.filter(
-    (p: any) =>
-      String(p?.risk ?? "").toUpperCase() === "CRITICAL"
+    (p: any) => String(p?.risk ?? "").toUpperCase() === "CRITICAL",
   ).length
 
-  const displayedPermissions = showAll
-    ? permissions
-    : highRiskPermissions
+  const displayedPermissions = showAll ? permissions : highRiskPermissions
 
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-5">
@@ -313,34 +283,19 @@ function PermissionMatrix({ result }: { result: any }) {
         Permission Matrix Heatmap
       </h3>
 
-      {/* SUMMARY */}
       <div className="mb-4 flex flex-wrap items-center gap-3 font-mono text-[10px]">
-        <span className="text-red-400">
-          {highRiskPermissions.length} high-risk
-        </span>
-
+        <span className="text-red-400">{highRiskPermissions.length} high-risk</span>
         <span className="text-slate-600">·</span>
-
-        <span className="text-slate-400">
-          {criticalCount} critical
-        </span>
-
+        <span className="text-slate-400">{criticalCount} critical</span>
         <span className="text-slate-600">·</span>
-
-        <span className="text-slate-500">
-          {permissions.length} total declared
-        </span>
+        <span className="text-slate-500">{permissions.length} total declared</span>
       </div>
 
-      {/* PERMISSIONS */}
       <div className="flex flex-wrap gap-2">
         {displayedPermissions.length > 0 ? (
           displayedPermissions.map((p: any) => {
             const risk = String(p?.risk ?? "").toUpperCase()
-
-            const isCritical =
-              risk === "CRITICAL" || risk === "HIGH"
-
+            const isCritical = risk === "CRITICAL" || risk === "HIGH"
             const name =
               p?.short_name ??
               p?.permission?.split(".").pop() ??
@@ -357,10 +312,7 @@ function PermissionMatrix({ result }: { result: any }) {
                     : "border border-slate-700 bg-slate-800/50 text-slate-400",
                 )}
               >
-                {isCritical && (
-                  <AlertTriangle className="size-3" />
-                )}
-
+                {isCritical && <AlertTriangle className="size-3" />}
                 {name}
               </span>
             )
@@ -372,7 +324,6 @@ function PermissionMatrix({ result }: { result: any }) {
         )}
       </div>
 
-      {/* SHOW ALL / COLLAPSE */}
       {permissions.length > highRiskPermissions.length && (
         <button
           type="button"
@@ -386,21 +337,36 @@ function PermissionMatrix({ result }: { result: any }) {
       )}
 
       <p className="mt-4 font-mono text-[10px] text-slate-500">
-        <span className="text-red-400">
-          {highRiskPermissions.length} high-risk permissions
-        </span>{" "}
-        detected ·{" "}
-        <span className="text-slate-400">
-          {criticalCount} critical
-        </span>{" "}
-        · capable of SMS interception, accessibility hijack & overlay attacks.
+        <span className="text-red-400">{highRiskPermissions.length} high-risk permissions</span> detected ·{" "}
+        <span className="text-slate-400">{criticalCount} critical</span> · capable of SMS interception, accessibility hijack & overlay attacks.
       </p>
     </div>
   )
 }
 
-function RightColumn() {
-  const [active, setActive] = useState(STORYBOARD[0])
+function RightColumn({ result }: { result?: any }) {
+  // Read storyboard, fallback to screenplay, fallback to spectre-data
+  const customStoryboard =
+    result?.social?.storyboard ??
+    result?.social?.screenplay ??
+    result?.storyboard ??
+    STORYBOARD
+
+  const [activeStepId, setActiveStepId] = useState<number>(1)
+
+  // Match on either 'id' or 'step'
+  const activeStep =
+    customStoryboard.find((s: any) => (s.id ?? s.step) === activeStepId) ||
+    customStoryboard[0]
+
+  // Extract clean brand name from real APK analysis
+  const detectedBrand =
+    result?.social?.app_name ||
+    result?.social?.brand_name ||
+    result?.static?.app_name ||
+    result?.static?.authenticity?.bank_name ||
+    result?.static?.package_name?.split(".").pop() ||
+    "Application"
 
   return (
     <div className="glass-card flex flex-col rounded-2xl border border-slate-800 p-5">
@@ -409,18 +375,19 @@ function RightColumn() {
       </h3>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_auto]">
-        {/* timeline stepper */}
+        {/* Timeline Stepper */}
         <ol className="relative flex flex-col gap-1">
-          {STORYBOARD.map((s, i) => {
-            const isActive = active.id === s.id
+          {customStoryboard.map((s: any, i: number) => {
+            const stepNumber = s.id ?? s.step ?? i + 1
+            const isActive = activeStepId === stepNumber
             return (
-              <li key={s.id} className="relative pl-7">
-                {i < STORYBOARD.length - 1 && (
+              <li key={stepNumber} className="relative pl-7">
+                {i < customStoryboard.length - 1 && (
                   <span className="absolute left-[10px] top-7 h-[calc(100%-12px)] w-px bg-slate-700" />
                 )}
                 <button
                   type="button"
-                  onClick={() => setActive(s)}
+                  onClick={() => setActiveStepId(stepNumber)}
                   className="group flex w-full items-start gap-3 rounded-lg py-2 text-left"
                 >
                   <span
@@ -431,7 +398,7 @@ function RightColumn() {
                         : "border-slate-600 bg-slate-900 text-slate-400 group-hover:border-slate-500",
                     )}
                   >
-                    {s.id}
+                    {stepNumber}
                   </span>
                   <span>
                     <span
@@ -442,7 +409,9 @@ function RightColumn() {
                     >
                       {s.title}
                     </span>
-                    <span className="block text-[11px] text-slate-500">{s.subtitle}</span>
+                    <span className="block text-[11px] text-slate-500">
+                      {s.subtitle || s.description}
+                    </span>
                   </span>
                 </button>
               </li>
@@ -450,23 +419,36 @@ function RightColumn() {
           })}
         </ol>
 
-        {/* device viewport */}
-        <PhoneFrame screen={active.device} />
+        {/* Dynamic Mobile Viewport */}
+        <PhoneFrame activeStep={activeStep} stepId={activeStepId} brandName={detectedBrand} />
       </div>
     </div>
   )
 }
 
-function MitmConsole() {
+function MitmConsole({ dynamic }: { dynamic?: any }) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const rawConsole = dynamic?.mitm_console ?? []
+  const hasRealLogs = Array.isArray(rawConsole) && rawConsole.length > 0
+  const logs = hasRealLogs ? rawConsole : MITM_LOG
+
   const [lines, setLines] = useState(0)
 
   useEffect(() => {
+    setLines(0)
+    if (!logs.length) return
+    const step = Math.max(1, Math.floor(logs.length / 15))
     const t = setInterval(() => {
-      setLines((n) => (n < MITM_LOG.length ? n + 1 : n))
-    }, 700)
+      setLines((n) => {
+        if (n + step >= logs.length) {
+          clearInterval(t)
+          return logs.length
+        }
+        return n + step
+      })
+    }, 50)
     return () => clearInterval(t)
-  }, [])
+  }, [logs])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
@@ -477,36 +459,55 @@ function MitmConsole() {
       <h3 className="mb-4 flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-wider text-slate-200">
         <Network className="size-4 text-rose-400" /> Raw mitmproxy Interception Console
         <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] text-rose-400">
-          <span className="size-2 rounded-full bg-rose-500 animate-pulse-dot" /> CAPTURING
+          <span className="size-2 rounded-full bg-rose-500 animate-pulse-dot" />
+          {hasRealLogs ? `CAPTURED (${logs.length} FLOWS)` : "SAMPLE CAPTURE"}
         </span>
       </h3>
       <div
         ref={scrollRef}
         className="terminal-scroll h-56 space-y-2 overflow-y-auto rounded-lg border border-slate-800 bg-slate-950/80 p-4 font-mono text-xs"
       >
-        {MITM_LOG.slice(0, lines).map((l, i) => (
-          <div
-            key={i}
-            className={cn(
-              "flex gap-2 leading-relaxed",
-              l.critical
-                ? "rounded border border-red-500/30 bg-red-950/40 p-2 text-red-400 shadow-[0_0_14px_-4px] shadow-red-500/50"
-                : "text-slate-400",
-            )}
-          >
-            <span className="shrink-0 text-slate-600">{l.time}</span>
-            <span className="flex-1 break-words">{l.text}</span>
+        {logs.slice(0, lines).map((item: any, i: number) => {
+          const time = item.timestamp ?? item.time ?? "00:00:00.000"
+          let text = item.raw_line ?? item.text ?? ""
+          if (typeof text === "string" && time && text.includes(time)) {
+            text = text.replace(time, "").trim()
+          }
+          if (typeof text === "string" && text.startsWith("🔴")) {
+            text = text.replace("🔴", "").trim()
+          }
+          const isCritical = Boolean(item.is_alarm ?? item.critical)
+
+          return (
+            <div
+              key={i}
+              className={cn(
+                "flex gap-2 leading-relaxed",
+                isCritical
+                  ? "rounded border border-red-500/30 bg-red-950/40 p-2 text-red-400 shadow-[0_0_14px_-4px] shadow-red-500/50 font-semibold"
+                  : "text-slate-400",
+              )}
+            >
+              <span className="shrink-0 text-slate-600">{time}</span>
+              <span className="flex-1 break-words">{text}</span>
+            </div>
+          )
+        })}
+        {lines >= logs.length && (
+          <div className="text-slate-600">
+            {"// listener active — dynamic session telemetry synchronized"}
           </div>
-        ))}
-        {lines >= MITM_LOG.length && (
-          <div className="text-slate-600">{"// listener active — awaiting next frame..."}</div>
         )}
       </div>
     </div>
   )
 }
 
-function RuntimeDelta() {
+function RuntimeDelta({ dynamic }: { dynamic?: any }) {
+  const rawDelta = dynamic?.behavior_delta
+  const hasRealDelta = Array.isArray(rawDelta) && rawDelta.length > 0
+  const deltaList = hasRealDelta ? rawDelta : RUNTIME_DELTA
+
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-5">
       <h3 className="mb-1 flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-wider text-slate-200">
@@ -526,26 +527,43 @@ function RuntimeDelta() {
             </tr>
           </thead>
           <tbody>
-            {RUNTIME_DELTA.map((r) => {
-              const hidden = !r.declared && r.runtime
-              const decoy = r.declared && !r.runtime
+            {deltaList.map((r: any, idx: number) => {
+              const perm = r.permission ?? `CAPABILITY_${idx}`
+              const isDeclared =
+                typeof r.declared_bool === "boolean"
+                  ? r.declared_bool
+                  : r.declared === "YES" || Boolean(r.declared)
+              const isRuntime =
+                typeof r.runtime_bool === "boolean"
+                  ? r.runtime_bool
+                  : r.runtime === "YES" || Boolean(r.runtime)
+              const note = r.analyst_note ?? r.note ?? ""
+              const hidden =
+                r.status_tag === "HIDDEN_THREAT" || (!isDeclared && isRuntime)
+              const decoy =
+                r.status_tag === "DECOY" || (isDeclared && !isRuntime)
+
               return (
-                <tr key={r.permission} className="border-b border-slate-800/60">
-                  <td className="px-3 py-2.5 text-slate-300">{r.permission}</td>
+                <tr key={perm + idx} className="border-b border-slate-800/60">
+                  <td className="px-3 py-2.5 text-slate-300">{perm}</td>
                   <td className="px-3 py-2.5">
-                    <Cell on={r.declared} />
+                    <Cell on={isDeclared} />
                   </td>
                   <td className="px-3 py-2.5">
-                    <Cell on={r.runtime} alarm={hidden} />
+                    <Cell on={isRuntime} alarm={hidden} />
                   </td>
                   <td
                     className={cn(
                       "px-3 py-2.5",
-                      hidden ? "text-rose-400" : decoy ? "text-amber-400" : "text-slate-400",
+                      hidden
+                        ? "text-rose-400 font-semibold"
+                        : decoy
+                          ? "text-amber-400"
+                          : "text-slate-400",
                     )}
                   >
                     {hidden && "⚠ "}
-                    {r.note}
+                    {note}
                   </td>
                 </tr>
               )

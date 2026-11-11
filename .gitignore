@@ -25,3 +25,4 @@ scripts/__pycache__/
 androguard.db
 androguard.db-shm
 androguard.db-wal
+*.quark.log

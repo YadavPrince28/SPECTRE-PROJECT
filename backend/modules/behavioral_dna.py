@@ -1764,12 +1764,14 @@ def analyze_behavioral_dna(
                 "behavioral_score": (
                     row["behavioral_score"]
                 ),
+                "similarity_score": row["behavioral_score"],
 
                 "behavioral_similarity": (
                     row[
                         "behavioral_similarity"
                     ]
                 ),
+                "similarity": row["behavioral_similarity"],
 
                 "class_idf_score": (
                     row[
@@ -1816,6 +1818,13 @@ def analyze_behavioral_dna(
             ],
             6,
         ),
+        # ADD THIS ALIAS:
+        "similarity_score": round(
+            top[
+                "behavioral_score"
+            ],
+            6,
+        ),
 
         # ---------------------------------------------------------------------
         # Raw mathematical score
@@ -1823,6 +1832,13 @@ def analyze_behavioral_dna(
 
         # 0–1
         "behavioral_similarity": round(
+            top[
+                "behavioral_similarity"
+            ],
+            9,
+        ),
+        # ADD THIS ALIAS:
+        "similarity": round(
             top[
                 "behavioral_similarity"
             ],

@@ -1,0 +1,9 @@
+{
+  "labels":[
+    "URGENCY",
+    "FINANCIAL",
+    "PRIVILEGE",
+    "MASQUERADE"
+  ],
+  "threshold":0.5
+}
