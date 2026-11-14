@@ -24,6 +24,10 @@ const TONE_STYLES: Record<PipelineStep["tone"], { color: string; icon: typeof Cp
   genai: { color: "text-cyan-400", icon: Brain },
 }
 
+// Automatically switch between local development and Oracle Cloud production backend
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "")
+const API_KEY = process.env.NEXT_PUBLIC_SPECTRE_API_KEY || ""
+
 export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "running" | "done">("idle")
   const [progress, setProgress] = useState(0)
@@ -32,9 +36,37 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
   const [fileName, setFileName] = useState("uniontrust_secure_v3.2.apk")
   const [serverLog, setServerLog] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const completedRef = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+    }
+  }, [])
+
+  function finishAnalysis(result: any) {
+    if (completedRef.current) return
+    completedRef.current = true
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current)
+      pollIntervalRef.current = null
+    }
+    setProgress(100)
+    setVisibleSteps(PIPELINE_STEPS.length)
+    setStatus("done")
+    setServerLog("Analysis complete. Serializing intelligence vectors...")
+    setTimeout(() => onComplete(result), 600)
+  }
 
   function startPipeline(file?: File) {
     if (status === "uploading" || status === "running") return
+
+    completedRef.current = false
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current)
+      pollIntervalRef.current = null
+    }
 
     if (file) {
       setFileName(file.name)
@@ -73,19 +105,18 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
 
   async function uploadToBackend(file: File) {
     try {
-      setServerLog("Dispatching archive to SPECTRE analysis pipeline...")
+      setServerLog(`Dispatching archive to SPECTRE pipeline (${API_BASE_URL})...`)
       const formdata = new FormData()
       formdata.append("file", file)
 
-      // const uploadResponse = await fetch("http://localhost:8000/analyze", {
-      //   method: "POST",
-      //   body: formdata,
-      // })
-      const uploadResponse = await fetch("https://spectre-pro.duckdns.org/analyze", {
+      const headers: Record<string, string> = {}
+      if (API_KEY) {
+        headers["X-API-Key"] = API_KEY
+      }
+
+      const uploadResponse = await fetch(`${API_BASE_URL}/analyze`, {
         method: "POST",
-        headers: {
-          "X-API-Key": process.env.NEXT_PUBLIC_SPECTRE_API_KEY || "",
-        },
+        headers,
         body: formdata,
       })
 
@@ -99,8 +130,12 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       setProgress(25)
       setVisibleSteps(2)
 
-      // const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
-      const ws = new WebSocket(`wss://spectre-pro.duckdns.org/status/${jobId}`)
+      // Start fallback polling immediately in parallel so UI never freezes if WS drops
+      startFallbackPolling(jobId)
+
+      const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://"
+      const wsHost = API_BASE_URL.replace(/^https?:\/\//, "")
+      const ws = new WebSocket(`${wsProtocol}${wsHost}/status/${jobId}`)
 
       ws.onopen = () => {
         setServerLog(`Pipeline stream connected (Job ID: ${jobId})`)
@@ -120,17 +155,14 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           }
 
           if (data.status === "complete") {
-            setProgress(100)
-            setVisibleSteps(PIPELINE_STEPS.length)
-            setStatus("done")
-            setServerLog("Analysis complete. Serializing intelligence vectors...")
             ws.close()
-            setTimeout(() => onComplete(data.result), 600)
+            finishAnalysis(data.result)
           }
 
           if (data.status === "error") {
             console.error(`[SPECTRE] Pipeline error: ${data.error}`)
             setServerLog(`Error: ${data.error}`)
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
             ws.close()
             setStatus("idle")
           }
@@ -140,8 +172,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       }
 
       ws.onerror = () => {
-        console.error("[SPECTRE] WebSocket connection failed")
-        fallbackPollResult(jobId)
+        console.warn("[SPECTRE] WebSocket error; relying on HTTP polling fallback.")
       }
 
       ws.onclose = () => {
@@ -149,30 +180,53 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       }
     } catch (error) {
       console.error("[SPECTRE] Ingestion error:", error)
-      setServerLog("Ingestion failed. Ensure backend service is running on port 8000.")
+      setServerLog(`Ingestion failed. Ensure backend service is reachable at ${API_BASE_URL}.`)
       setStatus("idle")
     }
   }
 
-  async function fallbackPollResult(jobId: string) {
-    try {
-      // const resp = await fetch(`http://localhost:8000/result/${jobId}`)
-      const resp = await fetch(`https://spectre-pro.duckdns.org/result/${jobId}`, {
-        headers: {
-          "X-API-Key": process.env.NEXT_PUBLIC_SPECTRE_API_KEY || "",
-        },
-      })
-      if (resp.ok) {
-        const data = await resp.json()
-        if (data.status === "complete") {
-          setProgress(100)
-          setStatus("done")
-          setTimeout(() => onComplete(data.result), 600)
-        }
-      }
-    } catch (e) {
-      console.error("[SPECTRE] Fallback poll error:", e)
+  function startFallbackPolling(jobId: string) {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+
+    const headers: Record<string, string> = {}
+    if (API_KEY) {
+      headers["X-API-Key"] = API_KEY
     }
+
+    pollIntervalRef.current = setInterval(async () => {
+      if (completedRef.current) {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+        return
+      }
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/result/${jobId}`, { headers })
+        if (resp.ok) {
+          const data = await resp.json()
+
+          if (data.latest_log) {
+            setServerLog(data.latest_log)
+          }
+
+          if (data.status === "running") {
+            setProgress((prev) => Math.min(90, prev + 8))
+            setVisibleSteps((prev) => Math.min(PIPELINE_STEPS.length - 1, prev + 1))
+          }
+
+          if (data.status === "complete") {
+            finishAnalysis(data.result)
+          }
+
+          if (data.status === "error") {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+            setServerLog(`Error: ${data.error}`)
+            setStatus("idle")
+          }
+        }
+      } catch (e) {
+        console.error("[SPECTRE] Fallback poll error:", e)
+      }
+    }, 2500)
   }
 
   return (
@@ -219,7 +273,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           <p className="text-balance text-lg font-semibold text-slate-100">
             Drop suspicious banking APK archive here or browse local directories
           </p>
-          <p className="font-mono text-xs text-slate-500">.apk file extensions only</p>
+          <p className="font-mono text-xs text-slate-500">.apk file extensions only (Up to 200MB)</p>
         </div>
 
         <div className="relative flex flex-wrap items-center justify-center gap-3">
