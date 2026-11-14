@@ -81,7 +81,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       //   method: "POST",
       //   body: formdata,
       // })
-      const uploadResponse = await fetch("https://spectre-pro.duckdns.org/api/analyze", {
+      const uploadResponse = await fetch("https://spectre-pro.duckdns.org/analyze", {
         method: "POST",
         headers: {
           "X-API-Key": process.env.NEXT_PUBLIC_SPECTRE_API_KEY || "",
