@@ -24,6 +24,10 @@ const TONE_STYLES: Record<PipelineStep["tone"], { color: string; icon: typeof Cp
   genai: { color: "text-cyan-400", icon: Brain },
 }
 
+// Automatically switch between local development and Oracle Cloud production backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_KEY = process.env.NEXT_PUBLIC_SPECTRE_API_KEY || ""
+
 export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "running" | "done">("idle")
   const [progress, setProgress] = useState(0)
@@ -73,12 +77,18 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
 
   async function uploadToBackend(file: File) {
     try {
-      setServerLog("Dispatching archive to SPECTRE analysis pipeline...")
+      setServerLog(`Dispatching archive to SPECTRE pipeline (${API_BASE_URL})...`)
       const formdata = new FormData()
       formdata.append("file", file)
 
-      const uploadResponse = await fetch("http://localhost:8000/analyze", {
+      const headers: Record<string, string> = {}
+      if (API_KEY) {
+        headers["X-API-Key"] = API_KEY
+      }
+
+      const uploadResponse = await fetch(`${API_BASE_URL}/analyze`, {
         method: "POST",
+        headers,
         body: formdata,
       })
 
@@ -92,7 +102,10 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       setProgress(25)
       setVisibleSteps(2)
 
-      const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
+      // Automatically construct WS or WSS URL based on API base URL protocol
+      const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://"
+      const wsHost = API_BASE_URL.replace(/^https?:\/\//, "")
+      const ws = new WebSocket(`${wsProtocol}${wsHost}/status/${jobId}`)
 
       ws.onopen = () => {
         setServerLog(`Pipeline stream connected (Job ID: ${jobId})`)
@@ -141,14 +154,19 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       }
     } catch (error) {
       console.error("[SPECTRE] Ingestion error:", error)
-      setServerLog("Ingestion failed. Ensure backend service is running on port 8000.")
+      setServerLog(`Ingestion failed. Ensure backend service is reachable at ${API_BASE_URL}.`)
       setStatus("idle")
     }
   }
 
   async function fallbackPollResult(jobId: string) {
     try {
-      const resp = await fetch(`http://localhost:8000/result/${jobId}`)
+      const headers: Record<string, string> = {}
+      if (API_KEY) {
+        headers["X-API-Key"] = API_KEY
+      }
+
+      const resp = await fetch(`${API_BASE_URL}/result/${jobId}`, { headers })
       if (resp.ok) {
         const data = await resp.json()
         if (data.status === "complete") {
@@ -206,7 +224,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           <p className="text-balance text-lg font-semibold text-slate-100">
             Drop suspicious banking APK archive here or browse local directories
           </p>
-          <p className="font-mono text-xs text-slate-500">.apk file extensions only</p>
+          <p className="font-mono text-xs text-slate-500">.apk file extensions only (Up to 200MB)</p>
         </div>
 
         <div className="relative flex flex-wrap items-center justify-center gap-3">
