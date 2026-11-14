@@ -24,10 +24,6 @@ const TONE_STYLES: Record<PipelineStep["tone"], { color: string; icon: typeof Cp
   genai: { color: "text-cyan-400", icon: Brain },
 }
 
-// Automatically switch between local development and Oracle Cloud production backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-const API_KEY = process.env.NEXT_PUBLIC_SPECTRE_API_KEY || ""
-
 export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "running" | "done">("idle")
   const [progress, setProgress] = useState(0)
@@ -77,18 +73,19 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
 
   async function uploadToBackend(file: File) {
     try {
-      setServerLog(`Dispatching archive to SPECTRE pipeline (${API_BASE_URL})...`)
+      setServerLog("Dispatching archive to SPECTRE analysis pipeline...")
       const formdata = new FormData()
       formdata.append("file", file)
 
-      const headers: Record<string, string> = {}
-      if (API_KEY) {
-        headers["X-API-Key"] = API_KEY
-      }
-
-      const uploadResponse = await fetch(`${API_BASE_URL}/analyze`, {
+      // const uploadResponse = await fetch("http://localhost:8000/analyze", {
+      //   method: "POST",
+      //   body: formdata,
+      // })
+      const uploadResponse = await fetch("https://spectre-pro.duckdns.org/api/analyze", {
         method: "POST",
-        headers,
+        headers: {
+          "X-API-Key": process.env.NEXT_PUBLIC_SPECTRE_API_KEY || "",
+        },
         body: formdata,
       })
 
@@ -102,10 +99,8 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       setProgress(25)
       setVisibleSteps(2)
 
-      // Automatically construct WS or WSS URL based on API base URL protocol
-      const wsProtocol = API_BASE_URL.startsWith("https") ? "wss://" : "ws://"
-      const wsHost = API_BASE_URL.replace(/^https?:\/\//, "")
-      const ws = new WebSocket(`${wsProtocol}${wsHost}/status/${jobId}`)
+      // const ws = new WebSocket(`ws://localhost:8000/status/${jobId}`)
+      const ws = new WebSocket(`wss://spectre-pro.duckdns.org/status/${jobId}`)
 
       ws.onopen = () => {
         setServerLog(`Pipeline stream connected (Job ID: ${jobId})`)
@@ -154,19 +149,19 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
       }
     } catch (error) {
       console.error("[SPECTRE] Ingestion error:", error)
-      setServerLog(`Ingestion failed. Ensure backend service is reachable at ${API_BASE_URL}.`)
+      setServerLog("Ingestion failed. Ensure backend service is running on port 8000.")
       setStatus("idle")
     }
   }
 
   async function fallbackPollResult(jobId: string) {
     try {
-      const headers: Record<string, string> = {}
-      if (API_KEY) {
-        headers["X-API-Key"] = API_KEY
-      }
-
-      const resp = await fetch(`${API_BASE_URL}/result/${jobId}`, { headers })
+      // const resp = await fetch(`http://localhost:8000/result/${jobId}`)
+      const resp = await fetch(`https://spectre-pro.duckdns.org/result/${jobId}`, {
+        headers: {
+          "X-API-Key": process.env.NEXT_PUBLIC_SPECTRE_API_KEY || "",
+        },
+      })
       if (resp.ok) {
         const data = await resp.json()
         if (data.status === "complete") {
@@ -224,7 +219,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
           <p className="text-balance text-lg font-semibold text-slate-100">
             Drop suspicious banking APK archive here or browse local directories
           </p>
-          <p className="font-mono text-xs text-slate-500">.apk file extensions only (Up to 200MB)</p>
+          <p className="font-mono text-xs text-slate-500">.apk file extensions only</p>
         </div>
 
         <div className="relative flex flex-wrap items-center justify-center gap-3">
