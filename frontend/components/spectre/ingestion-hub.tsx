@@ -192,6 +192,7 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
     if (API_KEY) {
       headers["X-API-Key"] = API_KEY
     }
+    let lastSeenLog = ""
 
     pollIntervalRef.current = setInterval(async () => {
       if (completedRef.current) {
@@ -204,12 +205,10 @@ export function IngestionHub({ onComplete }: { onComplete: (data: any) => void }
         if (resp.ok) {
           const data = await resp.json()
 
-          if (data.latest_log) {
+          if (data.latest_log && data.latest_log !== lastSeenLog) {
+            lastSeenLog = data.latest_log
             setServerLog(data.latest_log)
-          }
-
-          if (data.status === "running") {
-            setProgress((prev) => Math.min(90, prev + 8))
+            setProgress((prev) => Math.min(80, prev + 12))
             setVisibleSteps((prev) => Math.min(PIPELINE_STEPS.length - 1, prev + 1))
           }
 
