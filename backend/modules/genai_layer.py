@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import json
 import logging
 import os
@@ -8,14 +9,22 @@ import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+import time
+
+from pydantic import BaseModel
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 logger = logging.getLogger("spectre.genai")
 
 try:
     from dotenv import load_dotenv
+
     current_dir = Path(__file__).resolve().parent
-    for p in [current_dir.parent / ".env", current_dir.parent.parent / ".env", current_dir / ".env"]:
+    for p in [
+        current_dir.parent / ".env",
+        current_dir.parent.parent / ".env",
+        current_dir / ".env",
+    ]:
         if p.is_file():
             load_dotenv(dotenv_path=p, override=True)
             break
@@ -28,12 +37,13 @@ _GENAI_CLIENT = None
 if GEMINI_API_KEY:
     try:
         from google import genai
-        # Enforce strict 12.0s HTTP socket timeout to prevent batch pipeline stalls
+
         _GENAI_CLIENT = genai.Client(
             api_key=GEMINI_API_KEY,
-            http_options={"timeout": 12000},
+            http_options={"timeout": 35000},
         )
     except Exception as exc:
+        print(f"[M5 ERROR] Failed to initialize Google GenAI client: {exc}", flush=True)
         logger.warning(f"[M5] Failed to initialize Google GenAI client: {exc}")
         _GENAI_CLIENT = None
 
@@ -45,188 +55,501 @@ BENIGN_AD_DOMAINS = [
     "gstatic.com",
     "facebook.com",
     "crashlytics.com",
+    "firebase.io",
+    "firebaseio.com",
+    "appsflyer.com",
+    "app-measurement.com",
+]
+
+OFFICIAL_BANK_TOKENS = [
+    "com.boi.ua.android",
+    "com.sbi",
+    "com.axis",
+    "com.icici",
+    "com.hdfc",
+    "com.canara",
+    "com.kotak",
+    "bankofbaroda",
+    "unionbank",
+]
+
+KILL_CHAIN_PHASES: list[tuple[int, str]] = [
+    (1, "Delivery & Initial Lure"),
+    (2, "Privilege & Permission Coercion"),
+    (3, "Reconnaissance & Device Fingerprinting"),
+    (4, "Execution, Evasion & Decoy UI"),
+    (5, "Dynamic Code / Stager Loading"),
+    (6, "C2 Communication & Data Exfiltration"),
+    (7, "Persistence & Operational Impact"),
 ]
 
 
+# -----------------------------------------------------------------------------
+# Simplified Pydantic Schema (Compatible with Gemini Structured Outputs)
+# -----------------------------------------------------------------------------
+class BriefSection(BaseModel):
+    executive_summary: str
+    targeted_institution: str
+    est_accounts_at_risk: str
+    c2_jurisdiction: str
+    key_findings: list[str]
+
+
+class CodeSnippetItem(BaseModel):
+    file_name: str
+    method_name: str
+    code_type: str
+    smali_code: str
+    plain_english_interpretation: str
+    bank_countermeasure: str
+
+
+class KillChainStepItem(BaseModel):
+    stage: int
+    title: str
+    status: str
+    evidence_source: str
+    description: str
+
+
+class ComplianceSection(BaseModel):
+    incident_ref: str
+    circular_section: str
+    mandates: list[str]
+
+
+class ForensicReportSchema(BaseModel):
+    genai_score: float
+    threat_level: str
+    brief: BriefSection
+    code_snippets: list[CodeSnippetItem]
+    kill_chain: list[KillChainStepItem]
+    rbi_compliance: ComplianceSection
+
+
 def _clean_json(raw_text: str) -> str:
-    """Robustly extracts JSON payload even if model adds conversational wrapper text."""
     text = raw_text.strip()
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         return match.group(0).strip()
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
+    for prefix in ("```json", "```"):
+        if text.startswith(prefix):
+            text = text[len(prefix) :]
     if text.endswith("```"):
         text = text[:-3]
     return text.strip()
 
 
-def _call_gemini_fast(prompt: str) -> tuple[dict[str, Any] | None, str]:
-    """Queries Gemini API using gemini-3.5-flash-lite with deterministic fallback."""
-    if not _GENAI_CLIENT or not GEMINI_API_KEY:
-        return None, "deterministic_forensic_engine"
-
-    for model_name in ["gemini-3.5-flash-lite"]:
-        try:
-            response = _GENAI_CLIENT.models.generate_content(
-                model=model_name,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "temperature": 0.1,
-                },
-            )
-            if response and response.text:
-                cleaned = _clean_json(response.text)
-                parsed = json.loads(cleaned)
-                return parsed, f"google_genai ({model_name})"
-        except Exception as err:
-            logger.debug(f"[M5] {model_name} invocation failed or timed out: {err}")
-            continue
-
-    return None, "deterministic_forensic_engine"
+def _is_public_routable_host(host: str) -> bool:
+    """Rejects private/RFC1918/loopback IPs (e.g., 10.0.0.172) and benign ad/infra domains."""
+    h = str(host).strip().lower()
+    if not h or any(b in h for b in BENIGN_AD_DOMAINS):
+        return False
+    # Strip scheme/path/port if a full URL slipped in
+    if "://" in h:
+        h = h.split("://", 1)[1]
+    h = h.split("/", 1)[0]
+    host_only = h.split(":", 1)[0]
+    if not host_only:
+        return False
+    try:
+        ip = ipaddress.ip_address(host_only)
+        return ip.is_global
+    except ValueError:
+        return "." in host_only
 
 
-def _generate_deterministic_forensics(pipeline_results: dict[str, Any]) -> dict[str, Any]:
+def _extract_telemetry_bundle(pipeline_results: dict[str, Any]) -> dict[str, Any]:
     static_data = pipeline_results.get("static") or {}
     behavioral_data = pipeline_results.get("behavioral") or {}
     dynamic_data = pipeline_results.get("dynamic") or {}
     social_data = pipeline_results.get("social") or {}
 
-    pkg_name = static_data.get("package_name") or dynamic_data.get("package_name") or "com.target.unknown"
-    app_label = static_data.get("app_name") or social_data.get("app_name") or pkg_name.split(".")[-1].capitalize()
-    family = behavioral_data.get("closest_family", "GenericTrojan")
-    similarity = behavioral_data.get("behavioral_score") or behavioral_data.get("similarity_score") or 35.0
-
-    raw_dormant = dynamic_data.get("network_delta", {}).get("dormant_static_hosts", [])
-    genuine_c2 = [h for h in raw_dormant if not any(b in h.lower() for b in BENIGN_AD_DOMAINS)]
-    c2_ip = genuine_c2[0] if genuine_c2 else "185.220.101.44"
-    c2_jurisdiction = f"EXTERNAL ({c2_ip})" if genuine_c2 else "N/A"
-
-    authenticity = static_data.get("authenticity") or {}
-    auth_status = str(authenticity.get("status", "UNVERIFIED")).upper()
-    is_official_bank = (
-        auth_status == "AUTHENTIC_OFFICIAL_BANK"
-        or any(b in pkg_name.lower() for b in ["com.boi.ua.android", "com.sbi", "com.axis", "com.icici", "com.hdfc", "com.canara", "com.kotak"])
+    pkg_name = (
+        static_data.get("package_name")
+        or dynamic_data.get("package_name")
+        or "com.target.unknown"
     )
+    app_label = (
+        static_data.get("app_name")
+        or social_data.get("app_name")
+        or pipeline_results.get("app_name")
+        or pkg_name.split(".")[-1].capitalize()
+    )
+
+    permissions = static_data.get("permissions") or static_data.get("all_permissions") or []
+    if isinstance(permissions, dict):
+        permissions = list(permissions.keys())
+
+    dangerous_perms = [
+        {
+            "permission": d.get("permission"),
+            "risk": d.get("risk"),
+            "reason": d.get("reason"),
+        }
+        for d in (static_data.get("dangerous_permissions") or [])[:15]
+        if isinstance(d, dict)
+    ]
+
+    combo_alerts = [
+        {"combo": c.get("combo"), "reason": c.get("reason")}
+        for c in (static_data.get("combo_alerts") or [])[:10]
+        if isinstance(c, dict)
+    ]
+
+    suspicious_chains = (static_data.get("suspicious_api_chains") or [])[:8]
+    exported = [
+        f"{e.get('type')}:{e.get('component')}"
+        for e in (static_data.get("exported_components") or [])[:15]
+        if isinstance(e, dict)
+    ]
+
+    net_delta = dynamic_data.get("network_delta") or {}
+    hidden_hosts = net_delta.get("hidden_runtime_hosts") or []
+    correlated_hosts = net_delta.get("correlated_hosts") or []
+    dormant_hosts = net_delta.get("dormant_static_hosts") or []
+    static_ips = static_data.get("ips") or []
+    static_urls = static_data.get("urls") or []
+
+    combined_hosts = (
+        list(hidden_hosts)
+        + list(correlated_hosts)
+        + list(dormant_hosts)
+        + list(static_ips)
+    )
+    genuine_c2 = sorted({str(h).strip() for h in combined_hosts if _is_public_routable_host(str(h))})
+
+    top_matches = [
+        {
+            "family": m.get("family"),
+            "score": round(float(m.get("behavioral_score", 0.0)), 2),
+        }
+        for m in (behavioral_data.get("top_matches") or [])[:5]
+        if isinstance(m, dict)
+    ]
+
+    dynamic_findings = [
+        {
+            "id": f.get("id"),
+            "severity": f.get("severity"),
+            "title": f.get("title"),
+            "description": f.get("description"),
+        }
+        for f in (dynamic_data.get("findings") or [])[:10]
+        if isinstance(f, dict)
+    ]
+
+    behavior_delta = (dynamic_data.get("behavior_delta") or [])[:12]
+    exfil_events = (dynamic_data.get("exfiltration_events") or [])[:12]
+    dynamic_api_chains = (dynamic_data.get("api_chains") or [])[:6]
+    coverage = dynamic_data.get("coverage") or {}
+
+    return {
+        "pkg_name": str(pkg_name),
+        "app_label": str(app_label),
+        "m1_perm": float(static_data.get("permission_risk") or static_data.get("permission_score") or 0.0),
+        "m1_static_risk": float(static_data.get("static_risk_score") or 0.0),
+        "permissions": [str(p) for p in permissions[:30]],
+        "dangerous_permissions": dangerous_perms,
+        "combo_alerts": combo_alerts,
+        "suspicious_api_chains": suspicious_chains,
+        "exported": exported,
+        "static_urls_sample": [str(u) for u in static_urls[:10]],
+        "m2_score": float(behavioral_data.get("behavioral_score") or behavioral_data.get("similarity_score") or 0.0),
+        "family": str(behavioral_data.get("closest_family") or "Unclassified"),
+        "top_matches": top_matches,
+        "top1_margin_percent": float(behavioral_data.get("top1_margin_percent") or 0.0),
+        "m3_score": float(dynamic_data.get("dynamic_risk_score") or 0.0),
+        "m3_status": str(dynamic_data.get("status") or "unknown").lower(),
+        "m3_is_dormant": bool(coverage.get("is_dormant_or_evaded", False)),
+        "m3_screenshots": int(coverage.get("screenshots_count", 0)),
+        "dynamic_findings": dynamic_findings,
+        "dynamic_api_chains": dynamic_api_chains,
+        "behavior_delta": behavior_delta,
+        "exfil_events": exfil_events,
+        "hidden_hosts": [str(h) for h in hidden_hosts if _is_public_routable_host(str(h))][:6],
+        "genuine_c2": genuine_c2[:8],
+        "m4_score": float(social_data.get("social_engineering_score") or social_data.get("social_score") or 0.0),
+        "social_archetype": str(social_data.get("archetype") or "GENERAL"),
+        "raw_api_chain": float(
+            dynamic_data.get("api_chain_score")
+            or static_data.get("api_chain_score")
+            or static_data.get("chain_score")
+            or 0.0
+        ),
+        "authenticity": static_data.get("authenticity") or {},
+        "static_data_raw": static_data,
+        "dynamic_data_raw": dynamic_data,
+    }
+
+
+def _build_snippets_from_modules(
+    bundle: dict[str, Any],
+    is_official_bank: bool,
+) -> list[dict[str, str]]:
+    """Builds real Smali/trace snippets from M1 suspicious_api_chains and M3 runtime deltas."""
+    snippets: list[dict[str, str]] = []
+    pkg_name = bundle["pkg_name"]
+
+    # 1. Real Dalvik/Smali call-sequence blocks from M1 suspicious_api_chains
+    for chain in bundle["suspicious_api_chains"][:3]:
+        cls_name = str(chain.get("defining_class") or "UnknownClass").replace(".", "/")
+        method_name = str(chain.get("method") or "execute()")
+        chain_name = str(chain.get("chain") or "API_CHAIN")
+        ev_list = chain.get("evidence") or []
+
+        lines = [
+            f".class public L{cls_name};",
+            f".method public {method_name} # rule: {chain_name}",
+            "    .registers 4",
+        ]
+        for idx, ev in enumerate(ev_list[:4]):
+            api_cls = str(ev.get("api_class") or "").replace(".", "/")
+            api_mth = str(ev.get("method") or "")
+            cats = ",".join(ev.get("categories") or [])
+            lines.append(f"    # [insn #{ev.get('instruction_index', idx)}] category={cats}")
+            lines.append(f"    invoke-virtual {{v0, v1}}, L{api_cls};->{api_mth}()V")
+        lines.extend(["    return-void", ".end method"])
+
+        snippets.append({
+            "file_name": f"{cls_name.split('/')[-1]}.smali",
+            "method_name": method_name,
+            "code_type": "Smali Bytecode",
+            "smali_code": "\n".join(lines),
+            "plain_english_interpretation": (
+                f"{chain.get('reason') or 'Multi-step API sequence detected'} "
+                f"in {chain.get('defining_class')}::{method_name} "
+                f"({chain.get('source_api')} -> {chain.get('sink_api')})."
+            ),
+            "bank_countermeasure": (
+                f"Enforce runtime integrity checks, restrict sensitive capability usage, "
+                f"and validate session/API channels for {pkg_name}."
+            ),
+        })
+
+    # 2. M3 runtime capability delta & exfiltration trace
+    delta_rows = bundle["behavior_delta"]
+    exfil_events = bundle["exfil_events"]
+    if delta_rows or exfil_events:
+        trace_lines = [f"// Package: {pkg_name} | Dynamic status: {bundle['m3_status']}"]
+        for row in delta_rows[:5]:
+            trace_lines.append(
+                f"// [{row.get('status_tag', 'INFO')}] {row.get('permission')} "
+                f"(declared={row.get('declared')}, runtime={row.get('runtime')}): {row.get('analyst_note')}"
+            )
+        for ev in exfil_events[:4]:
+            trace_lines.append(
+                f"// [EXFIL:{ev.get('type')}] endpoint/detail={ev.get('detail')} — {ev.get('reason')}"
+            )
+
+        snippets.append({
+            "file_name": f"m3_runtime_delta_{pkg_name}.trace",
+            "method_name": "behavior_delta + exfiltration_events",
+            "code_type": "Frida Runtime Trace",
+            "smali_code": "\n".join(trace_lines),
+            "plain_english_interpretation": (
+                f"Correlated {len(delta_rows)} manifest-vs-runtime capability states and "
+                f"{len(exfil_events)} runtime network/exfiltration events on the sandbox."
+            ),
+            "bank_countermeasure": (
+                "Block unauthorized outbound endpoints, verify app origin, and alert on "
+                "HIDDEN_THREAT or unexpected runtime capability triggers."
+            ),
+        })
+
+    # 3. Fallback capability block if neither M1 chains nor M3 traces were populated
+    if not snippets:
+        if is_official_bank:
+            snippets.append({
+                "file_name": "SessionAttestation.smali",
+                "method_name": "verifyBankingSession(Landroid/content/Context;)Z",
+                "code_type": "Smali Bytecode",
+                "smali_code": (
+                    ".method public static verifyBankingSession(Landroid/content/Context;)Z\n"
+                    "    .locals 2\n"
+                    "    const/4 v0, 0x1\n"
+                    "    return v0\n"
+                    ".end method"
+                ),
+                "plain_english_interpretation": (
+                    f"Official banking package {pkg_name} aligns with expected authenticated mobile banking behavior."
+                ),
+                "bank_countermeasure": (
+                    "Maintain hardware-backed keystore attestation, TLS certificate pinning, and RASP controls."
+                ),
+            })
+        else:
+            perm_list = bundle["permissions"][:5] or ["android.permission.INTERNET"]
+            perm_lines = "\n".join(f'    const-string v0, "{p}"' for p in perm_list)
+            snippets.append({
+                "file_name": f"{bundle['app_label'].replace(' ', '')}ManifestAudit.smali",
+                "method_name": "inspectRequestedCapabilities()",
+                "code_type": "Manifest / API Signal",
+                "smali_code": (
+                    ".method public inspectRequestedCapabilities()V\n"
+                    "    .locals 2\n"
+                    f"{perm_lines}\n"
+                    "    return-void\n"
+                    ".end method"
+                ),
+                "plain_english_interpretation": (
+                    f"Static inspection of {pkg_name} enumerated {len(bundle['permissions'])} declared permissions "
+                    f"with a permission risk score of {bundle['m1_perm']:.0f}/100."
+                ),
+                "bank_countermeasure": (
+                    "Audit least-privilege permission usage, block sideloaded installers, and monitor network egress."
+                ),
+            })
+
+    return snippets[:4]
+
+
+def _build_grounded_kill_chain(bundle: dict[str, Any], is_official_bank: bool) -> list[dict[str, Any]]:
+    perms_upper = " ".join(bundle["permissions"]).upper()
+    has_sms_or_overlay = any(
+        tok in perms_upper
+        for tok in ["READ_SMS", "RECEIVE_SMS", "SEND_SMS", "SYSTEM_ALERT_WINDOW", "BIND_ACCESSIBILITY_SERVICE"]
+    )
+    has_boot = "RECEIVE_BOOT_COMPLETED" in perms_upper
+    has_c2 = len(bundle["genuine_c2"]) > 0
+    has_exfil = len(bundle["exfil_events"]) > 0
+
+    stages: list[dict[str, Any]] = []
+    for stage_num, phase_label in KILL_CHAIN_PHASES:
+        if stage_num == 1:
+            status = "Observed"
+            evidence = f"M1/M4: {bundle['pkg_name']} ({bundle['social_archetype']})"
+            desc = (
+                f"Distributed as '{bundle['app_label']}' ({bundle['pkg_name']}) with social engineering risk "
+                f"{bundle['m4_score']:.0f}/100."
+            )
+        elif stage_num == 2:
+            status = "Observed" if (has_sms_or_overlay or bundle["m1_perm"] >= 40) else "Inferred"
+            evidence = f"M1: {len(bundle['permissions'])} perms, risk {bundle['m1_perm']:.0f}/100"
+            desc = (
+                "Declares high-risk SMS, overlay, or accessibility permissions."
+                if has_sms_or_overlay
+                else f"Requests {len(bundle['permissions'])} standard/moderate permissions without critical OTP-hijack privileges."
+            )
+        elif stage_num == 3:
+            status = "Observed" if bundle["m2_score"] >= 50 else "Not Observed"
+            evidence = f"M2: {bundle['family']} ({bundle['m2_score']:.1f}% similarity)"
+            desc = (
+                f"Behavioral DNA aligns strongly with {bundle['family']} ({bundle['m2_score']:.1f}%), indicating legacy/known telemetry patterns."
+                if bundle["m2_score"] >= 50
+                else "No confirmed device fingerprinting or high-confidence trojan behavioral lineage."
+            )
+        elif stage_num == 4:
+            status = "Observed" if bundle["m3_is_dormant"] else ("Inferred" if bundle["m3_status"] == "complete" else "Not Observed")
+            evidence = f"M3: status={bundle['m3_status']}, dormant={bundle['m3_is_dormant']}"
+            desc = (
+                "Application remained dormant in the sandbox without generating UI activity or contacting declared endpoints, suggesting anti-analysis evasion."
+                if bundle["m3_is_dormant"]
+                else f"Dynamic execution completed ({bundle['m3_status']}) with runtime score {bundle['m3_score']:.0f}/100."
+            )
+        elif stage_num == 5:
+            status = "Observed" if bundle["raw_api_chain"] > 0 else "Not Observed"
+            evidence = f"M1/M3: API chain score {bundle['raw_api_chain']:.1f}/100"
+            desc = (
+                f"Detected suspicious API execution chains (score {bundle['raw_api_chain']:.1f}/100)."
+                if bundle["raw_api_chain"] > 0
+                else "No dynamic DEX loading or reflective stager execution observed."
+            )
+        elif stage_num == 6:
+            status = "Observed" if (has_exfil or has_c2) else "Not Observed"
+            evidence = f"M3: {len(bundle['exfil_events'])} exfil events, {len(bundle['genuine_c2'])} public hosts"
+            desc = (
+                f"External untrusted hosts identified: {', '.join(bundle['genuine_c2'][:3])}."
+                if (has_exfil or has_c2)
+                else "No verified external C2 communication or data exfiltration observed."
+            )
+        else:
+            status = "Inferred" if has_boot else "Not Observed"
+            evidence = "M1: RECEIVE_BOOT_COMPLETED" if has_boot else "M1/M3: Persistence check"
+            desc = (
+                "Declares RECEIVE_BOOT_COMPLETED for post-reboot initialization."
+                if has_boot
+                else "No boot-receiver persistence or automated background loop confirmed."
+            )
+
+        stages.append({
+            "stage": stage_num,
+            "title": phase_label,
+            "status": status,
+            "evidence_source": evidence,
+            "description": desc,
+        })
+
+    return stages
+
+
+def _generate_grounded_fallback(
+    pipeline_results: dict[str, Any],
+    bundle: dict[str, Any],
+    reason: str = "fallback",
+) -> dict[str, Any]:
+    pkg_name = bundle["pkg_name"]
+    app_label = bundle["app_label"]
+    authenticity = bundle["authenticity"]
+    is_official_bank = (
+        str(authenticity.get("status", "")).upper() == "AUTHENTIC_OFFICIAL_BANK"
+        or any(tok in pkg_name.lower() for tok in OFFICIAL_BANK_TOKENS)
+    )
+
+    c2_label = bundle["genuine_c2"][0] if bundle["genuine_c2"] else "None Observed"
+    c2_jurisdiction = f"EXTERNAL ({c2_label})" if bundle["genuine_c2"] else "None Observed"
 
     if is_official_bank:
         genai_score = 5.0
         threat_level = "LOW"
-        target_inst = authenticity.get("bank_name") or "Official Banking Institution"
+        target_inst = authenticity.get("bank_name") or f"{app_label} Banking"
         exec_summary = (
-            f"Artifact {pkg_name} ({app_label}) is verified as an official mobile banking "
-            f"application. Telephony and cryptographic APIs correspond to legitimate retail banking, UPI, "
-            f"and SIM-binding services. Zero rogue C2 beacons or unauthorized exfiltration routines detected."
+            f"Artifact {pkg_name} ({app_label}) matches an official banking application profile with low static "
+            f"permission risk ({bundle['m1_perm']:.0f}/100) and zero verified external C2 exfiltration."
         )
         findings = [
-            "Cryptographic signature verified against official banking entity keystore.",
-            "Telephony permissions correspond to legitimate SIM-binding and transaction 2FA mechanisms.",
-            "Dynamic runtime monitoring observed clean process lifecycle with zero overlay attempts.",
-            "Adheres to baseline RBI Master Circular Section 7.4 cybersecurity architecture standards.",
-        ]
-        smali_code = (
-            ".method public verifySession(Landroid/content/Context;)Z\n"
-            "    invoke-static {p0}, Lcom/boi/security/Attestation;->isDeviceSecure(Landroid/content/Context;)Z\n"
-            "    move-result v0\n"
-            "    return v0\n"
-            ".end method"
-        )
-        countermeasure = "Application matches statutory banking security standards. Maintain RASP integrity."
-        kill_chain = [
-            {"stage": 1, "title": "Store Distribution", "description": "Distributed via authorized Google Play Store channel."},
-            {"stage": 2, "title": "SIM Verification", "description": "Authenticates user device hardware via encrypted SMS handshake."},
-            {"stage": 3, "title": "Biometric Attestation", "description": "Authenticates account credentials through secure hardware keystore."},
-            {"stage": 4, "title": "Encrypted Session", "description": "Transacts with verified banking backend over pinned TLS endpoints."},
+            f"Verified official banking package namespace ({pkg_name}).",
+            f"Static permission profile ({bundle['m1_perm']:.0f}/100) aligns with legitimate banking operations.",
+            f"Dynamic sandbox run ({bundle['m3_status']}) recorded zero unauthorized exfiltration events.",
         ]
     else:
-        is_banking_spoof = (
-            authenticity.get("status") == "CERTIFICATE_MISMATCH"
-            or social_data.get("archetype") == "BANKING_PHISHING"
+        max_signal = max(
+            bundle["m1_perm"],
+            bundle["m2_score"],
+            bundle["m3_score"],
+            bundle["m4_score"],
+            bundle["raw_api_chain"],
         )
-        bank_name = authenticity.get("bank_name") or social_data.get("authenticity", {}).get("bank_name", "")
-
-        # Derive forensic score dynamically from telemetry when the cloud API is offline
-        m1_perm = float(static_data.get("permission_score") or static_data.get("permission_risk", 0.0))
-        m2_sim = float(similarity)
-
-        if is_banking_spoof:
-            genai_score = 85.0
-            threat_level = "CRITICAL"
-        elif family in ["DroidKungFu", "Anubis"]:
-            genai_score = 75.0
+        if len(bundle["exfil_events"]) > 0 or max_signal >= 75:
+            genai_score = round(min(95.0, max(70.0, max_signal)), 1)
             threat_level = "HIGH"
-        elif m1_perm >= 70.0 or m2_sim >= 50.0:
-            genai_score = min(100.0, max(75.0, (m1_perm * 0.5) + (m2_sim * 0.5)))
-            threat_level = "HIGH"
-        elif m1_perm >= 40.0 or m2_sim >= 35.0:
-            genai_score = min(100.0, max(65.0, (m1_perm * 0.4) + (m2_sim * 0.4) + 20.0))
+        elif max_signal >= 45:
+            genai_score = round(min(69.0, max(45.0, max_signal)), 1)
             threat_level = "MEDIUM"
         else:
-            genai_score = 35.0
+            genai_score = round(min(40.0, max(10.0, max_signal * 0.6)), 1)
             threat_level = "LOW"
 
-        if is_banking_spoof:
-            target_inst = f"{bank_name} Mobile Banking"
-            exec_summary = (
-                f"Artifact {pkg_name} is an active banking trojan from the {family} lineage. "
-                f"It masquerades as {bank_name} to deploy phishing overlays and intercept two-factor SMS OTP tokens."
-            )
-            findings = [
-                "Abuses BIND_ACCESSIBILITY_SERVICE to inject overlays over authentic banking applications.",
-                "Silently suppresses and exfiltrates incoming SMS verification codes before victim notification.",
-                "Contains latent C2 addresses embedded in DEX string constants for credential staging.",
-                "Employs dynamic class reflection to execute unauthorized telephony API calls.",
-            ]
-            smali_code = (
-                ".method private interceptOtp(Landroid/content/Intent;)V\n"
-                '    const-string v0, "android.provider.Telephony.SMS_RECEIVED"\n'
-                "    invoke-virtual {p1}, Landroid/content/Intent;->getAction()Ljava/lang/String;\n"
-                f'    const-string v3, "https://{c2_ip}/sms"\n'
-                "    return-void\n"
-                ".end method"
-            )
-            countermeasure = "Migrate OTP authentication to cryptographic push attestations (FIDO2)."
-            kill_chain = [
-                {"stage": 1, "title": "Smishing Lure", "description": f"Victim receives an SMS link impersonating {bank_name}."},
-                {"stage": 2, "title": "Accessibility Hijack", "description": "Coerces the user into granting Accessibility Service."},
-                {"stage": 3, "title": "Phishing Screen Overlay", "description": "Draws an overlay matching legitimate bank login screens."},
-                {"stage": 4, "title": "Credential Theft", "description": "Customer ID and MPIN are logged via background monitors."},
-                {"stage": 5, "title": "SMS OTP Interception", "description": "Incoming bank verification messages are routed to C2."},
-                {"stage": 6, "title": "C2 Server Exfiltration", "description": f"Stolen credentials are dispatched to {c2_ip}."},
-                {"stage": 7, "title": "Unauthorized Debit", "description": "Automated fund transfers drain victim balances."},
-            ]
-        else:
-            target_inst = "Android Retail Users (General Consumer Ecosystem)"
-            exec_summary = (
-                f"Artifact {pkg_name} ({app_label}) exhibits behavioral characteristics of the {family} trojan lineage, "
-                f"deploying background telemetry profiling and unverified network payloads."
-            )
-            findings = [
-                f"Correlates with {family} behavioral signatures ({similarity:.1f}% confidence).",
-                "Initializes background telemetry routines to fingerprint device identity.",
-                "Operates decoy user interfaces while maintaining background socket connections.",
-                "Embeds dynamic DEX reflection stagers to evade static signature detection.",
-            ]
-            smali_code = (
-                ".method public static startTelemetryService(Landroid/content/Context;)V\n"
-                "    invoke-virtual {p0, v0}, Landroid/content/Context;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;\n"
-                "    invoke-virtual {v1}, Landroid/telephony/TelephonyManager;->getDeviceId()Ljava/lang/String;\n"
-                "    return-void\n"
-                ".end method"
-            )
-            countermeasure = "Restrict background execution of non-whitelisted processes and inspect dynamic reflection."
-            kill_chain = [
-                {"stage": 1, "title": "Initial Lure", "description": f"Distributed under the guise of '{app_label}'."},
-                {"stage": 2, "title": "Privilege Coercion", "description": "Requests background execution and telemetry permissions."},
-                {"stage": 3, "title": "Device Fingerprinting", "description": "Collects IMEI, Android ID, and network carrier data."},
-                {"stage": 4, "title": "Decoy Presentation", "description": "Displays regular UI elements to mask activities."},
-                {"stage": 5, "title": "Dynamic Stager Loading", "description": "Retrieves secondary payload configs."},
-                {"stage": 6, "title": "Telemetry Exfiltration", "description": f"Transmits harvested records to {c2_ip}."},
-                {"stage": 7, "title": "Persistence", "description": "Registers boot receivers to survive reboots."},
-            ]
+        target_inst = "Android Retail Users (General Consumer Ecosystem)"
+        dormancy_note = (
+            " Dynamic analysis flagged sandbox dormancy, indicating potential anti-VM or anti-debugging evasion."
+            if bundle["m3_is_dormant"]
+            else f" Dynamic runtime monitoring recorded {len(bundle['exfil_events'])} exfiltration event(s)."
+        )
+        exec_summary = (
+            f"Artifact {pkg_name} ({app_label}) exhibits {bundle['m2_score']:.1f}% behavioral alignment with the "
+            f"{bundle['family']} lineage alongside a static permission risk of {bundle['m1_perm']:.0f}/100."
+            f"{dormancy_note} Public external C2 indicators: {c2_label}."
+        )
+        findings = [
+            f"Behavioral DNA strongly correlates with {bundle['family']} ({bundle['m2_score']:.1f}% similarity).",
+            f"Static analysis identified {len(bundle['permissions'])} permissions (risk score {bundle['m1_perm']:.0f}/100) and {len(bundle['suspicious_api_chains'])} suspicious API chain(s).",
+            f"Dynamic sandbox ({bundle['m3_status']}) observed {len(bundle['exfil_events'])} exfiltration event(s) and dormancy={bundle['m3_is_dormant']}.",
+            f"Publicly routable untrusted endpoints identified: {c2_label}.",
+        ]
+
+    snippets = _build_snippets_from_modules(bundle, is_official_bank)
+    primary_code = snippets[0]
 
     return {
         "module": "genai_synthesis",
@@ -237,146 +560,186 @@ def _generate_deterministic_forensics(pipeline_results: dict[str, Any]) -> dict[
         "brief": {
             "executive_summary": exec_summary,
             "targeted_institution": target_inst,
-            "est_accounts_at_risk": "Enrolled Mobile Banking Devices" if is_official_bank else "General Retail Installs",
+            "est_accounts_at_risk": "Enrolled Banking Users" if is_official_bank else "General Android Installs",
             "c2_jurisdiction": c2_jurisdiction,
             "key_findings": findings,
         },
         "code_interpreter": {
-            "file_name": "Session.smali" if is_official_bank else ("Hook.smali" if "Hook" in smali_code else "Telemetry.smali"),
-            "method_name": "verifySession()" if is_official_bank else ("interceptOtp()" if "Hook" in smali_code else "startTelemetryService()"),
-            "smali_code": smali_code,
-            "plain_english_interpretation": "Telephony events and sensitive device payloads are routed to endpoints.",
-            "bank_countermeasure": countermeasure,
+            "file_name": primary_code["file_name"],
+            "method_name": primary_code["method_name"],
+            "smali_code": primary_code["smali_code"],
+            "plain_english_interpretation": primary_code["plain_english_interpretation"],
+            "bank_countermeasure": primary_code["bank_countermeasure"],
         },
-        "kill_chain": kill_chain,
+        "code_snippets": snippets,
+        "kill_chain": _build_grounded_kill_chain(bundle, is_official_bank),
         "rbi_compliance": {
             "incident_ref": f"RBI/CSITE/{datetime.now().strftime('%Y%m%d')}/{pkg_name.split('.')[-1].upper()[:6]}",
-            "circular_section": "RBI Master Circular Section 7.4 Incident Reporting Standard",
+            "circular_section": "RBI Master Circular Section 7.4",
             "mandates": [
-                "Containment reporting to CSITE-RBI within prescribed statutory timelines.",
-                "Perimeter network firewall blocking for unverified remote destination IPs.",
-                "Revocation of retail sessions where unverified non-store binaries are detected.",
+                "Document verified forensic indicators and containment timeline under RBI Master Circular Section 7.4.",
+                "Block confirmed external malicious C2 infrastructure at network perimeter controls.",
+                "Enforce device attestation and prohibit sideloaded binaries on retail banking devices.",
             ],
         },
-        "mode": "deterministic_forensic_engine",
+        "mode": f"grounded_engine ({reason})",
         "completed_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
 def analyze_genai(pipeline_results: dict[str, Any]) -> dict[str, Any]:
-    static_data = pipeline_results.get("static") or {}
-    behavioral_data = pipeline_results.get("behavioral") or {}
-    dynamic_data = pipeline_results.get("dynamic") or {}
-    social_data = pipeline_results.get("social") or {}
-
-    pkg_name = static_data.get("package_name") or dynamic_data.get("package_name") or "com.target.unknown"
-    app_label = static_data.get("app_name") or social_data.get("app_name") or pkg_name.split(".")[-1].capitalize()
-    family = behavioral_data.get("closest_family", "GenericTrojan")
-    similarity = behavioral_data.get("behavioral_score") or behavioral_data.get("similarity_score") or 0.0
-
-    raw_dormant = dynamic_data.get("network_delta", {}).get("dormant_static_hosts", [])
-    genuine_c2 = [h for h in raw_dormant if not any(b in h.lower() for b in BENIGN_AD_DOMAINS)]
-
-    authenticity = static_data.get("authenticity") or {}
-    auth_status = str(authenticity.get("status", "UNVERIFIED")).upper()
+    bundle = _extract_telemetry_bundle(pipeline_results)
+    authenticity = bundle["authenticity"]
     is_official_bank = (
-        auth_status == "AUTHENTIC_OFFICIAL_BANK"
-        or any(b in pkg_name.lower() for b in ["com.boi.ua.android", "com.sbi", "com.axis", "com.icici", "com.hdfc", "com.canara", "com.kotak"])
+        str(authenticity.get("status", "")).upper() == "AUTHENTIC_OFFICIAL_BANK"
+        or any(tok in bundle["pkg_name"].lower() for tok in OFFICIAL_BANK_TOKENS)
     )
 
-    # 1. Extract cross-module telemetry signals
-    m1_perm = float(static_data.get("permission_risk") or static_data.get("permission_score", 0.0))
-    raw_api_chain = float(
-        dynamic_data.get("api_chain_score")
-        or static_data.get("api_chain_score")
-        or static_data.get("chain_score", 0.0)
-    )
-    exfil_events = dynamic_data.get("exfiltration_events") or []
-    dynamic_status = str(dynamic_data.get("status", "")).lower()
-
-    # 2. Determine if this APK is a benign utility candidate:
-    # Minimal static permission risk, zero malicious AST chains, and zero runtime exfiltration
     is_benign_candidate = (
         not is_official_bank
-        and m1_perm <= 35.0
-        and similarity < 35.0              # Excludes samples with high Markov trojan alignment
-        and raw_api_chain == 0.0
-        and len(exfil_events) == 0
-        and dynamic_status == "complete"
+        and bundle["m1_perm"] <= 35.0
+        and bundle["m2_score"] < 35.0
+        and bundle["raw_api_chain"] == 0.0
+        and len(bundle["exfil_events"]) == 0
+        and len(bundle["genuine_c2"]) == 0
     )
 
-    # 3. Context-calibrated prompt: prevents the model from mistaking ad/analytics SDK Markov matches for active malware
+    if not _GENAI_CLIENT or not GEMINI_API_KEY:
+        print("[M5 WARN] GEMINI_API_KEY missing or client uninitialized; using grounded fallback.", flush=True)
+        return _generate_grounded_fallback(pipeline_results, bundle, reason="no_api_key")
+
+    telemetry_payload = {
+        "package_name": bundle["pkg_name"],
+        "app_label": bundle["app_label"],
+        "is_official_bank": is_official_bank,
+        "benign_candidate": is_benign_candidate,
+        "m1_static": {
+            "permission_risk": bundle["m1_perm"],
+            "static_risk_score": bundle["m1_static_risk"],
+            "dangerous_permissions": bundle["dangerous_permissions"],
+            "combo_alerts": bundle["combo_alerts"],
+            "suspicious_api_chains": bundle["suspicious_api_chains"],
+            "exported_components": bundle["exported"],
+        },
+        "m2_behavioral_dna": {
+            "behavioral_score": bundle["m2_score"],
+            "closest_family": bundle["family"],
+            "top_matches": bundle["top_matches"],
+            "top1_margin_percent": bundle["top1_margin_percent"],
+        },
+        "m3_dynamic_sandbox": {
+            "status": bundle["m3_status"],
+            "dynamic_risk_score": bundle["m3_score"],
+            "is_dormant_or_evaded": bundle["m3_is_dormant"],
+            "screenshots_captured": bundle["m3_screenshots"],
+            "findings": bundle["dynamic_findings"],
+            "api_chains": bundle["dynamic_api_chains"],
+            "behavior_delta": bundle["behavior_delta"],
+            "exfiltration_events": bundle["exfil_events"],
+            "public_untrusted_endpoints": bundle["genuine_c2"],
+        },
+        "m4_social_engineering": {
+            "score": bundle["m4_score"],
+            "archetype": bundle["social_archetype"],
+        },
+    }
+
     prompt = f"""
-    You are an expert mobile malware forensic analyst scoring an Android APK under RBI Master Circular Section 7.4.
+You are a Principal Mobile Threat Intelligence Analyst writing an executive forensic briefing for a Tier-1 Banking SOC (Mandiant / CERT-In standard) under RBI Master Circular Section 7.4.
 
-    Artifact Telemetry:
-    - Package Name: {pkg_name}
-    - App Label: {app_label}
-    - Static Permission Risk: {m1_perm:.1f}/100
-    - Malicious API Attack Chains: {raw_api_chain:.1f}/100
-    - Runtime Network Exfiltration Events: {len(exfil_events)}
-    - Behavioral Lineage Reference: {family} ({similarity:.1f}% statistical Markov similarity)
-    - Verified Official Bank: {is_official_bank}
-    - Telemetry Profile: {"BENIGN_CANDIDATE (Low Static & API Risk)" if is_benign_candidate else "SUSPICIOUS_ARTIFACT"}
-    - Untrusted Contacted Endpoints: {genuine_c2[:3]}
+Analyze the cross-module telemetry for this APK and synthesize a cohesive, authoritative assessment:
+1. DO NOT just repeat raw numbers like "M1 Static Analysis: 13 permissions, risk score 35/100."
+2. EXPLAIN what the cross-module correlation means (for example: if Behavioral DNA shows high similarity to a known malware family like Glodream while dynamic analysis shows dormancy and 0 exfiltration events, explain that this indicates either anti-sandbox evasion or a legacy trojanized/adware codebase requiring manual reverse engineering).
+3. Write `executive_summary` as a sharp 3-sentence threat assessment covering: (a) classification & lineage, (b) observed capabilities or evasion, and (c) operational risk to retail/banking users.
+4. Write `key_findings` as 4-5 analytical, evidence-backed bullet points linking specific permissions, API chains, behavioral lineage, or runtime gaps to real attack impact.
+5. Set `rbi_compliance.circular_section` to exactly "RBI Master Circular Section 7.4" (do not repeat "Incident Reporting Standard").
+6. Populate all 7 `kill_chain` stages (1 to 7) with `status` set to "Observed", "Inferred", or "Not Observed", citing the exact module and artifact in `evidence_source`.
+7. Never invent C2 domains or treat private RFC1918 IPs (10.x, 192.168.x, 172.16-31.x) as external C2. If `public_untrusted_endpoints` is empty, set `c2_jurisdiction` to "None Observed".
+8. For `code_snippets`, generate 2-3 realistic, telemetry-grounded Smali/trace items based on the actual permissions, API chains, or runtime deltas present in the telemetry.
 
-    Analytical Rules:
-    1. If Verified Official Bank is True:
-       Assign genai_score between 0.0 and 10.0 (threat_level: LOW).
-    2. If Telemetry Profile is 'BENIGN_CANDIDATE' and Untrusted Contacted Endpoints is empty:
-       Statistical Markov similarity typically reflects third-party advertising or analytics SDKs (e.g., Unity, AdMob, Firebase).
-       Do NOT misclassify standard utility code as malicious trojans.
-       Assign genai_score between 5.0 and 20.0 (threat_level: LOW).
-    3. If Malicious API Attack Chains > 0, unauthorized C2 exfiltration is verified, or suspicious permission escalation occurs:
-       Assign genai_score reflecting real malicious severity between 65.0 and 100.0 (threat_level: HIGH or CRITICAL).
+Telemetry:
+{json.dumps(telemetry_payload, indent=2, default=str)}
+"""
 
-    Return ONLY a single valid JSON object:
-    {{
-        "genai_score": <float 0.0 to 100.0>,
-        "threat_level": "<LOW|MEDIUM|HIGH|CRITICAL>",
-        "brief": {{
-            "executive_summary": "<max 2 sentences>",
-            "targeted_institution": "<entity name>",
-            "est_accounts_at_risk": "<risk scope>",
-            "c2_jurisdiction": "<IP or N/A>",
-            "key_findings": ["<finding 1>", "<finding 2>", "<finding 3>"]
-        }},
-        "code_interpreter": {{
-            "file_name": "Hook.smali",
-            "method_name": "execute()",
-            "smali_code": ".method public execute()V\\n    return-void\\n.end method",
-            "plain_english_interpretation": "<brief explanation>",
-            "bank_countermeasure": "<brief countermeasure>"
-        }},
-        "kill_chain": [
-            {{"stage": 1, "title": "Delivery", "description": "Distribution"}},
-            {{"stage": 2, "title": "Execution", "description": "Trigger"}}
-        ],
-        "rbi_compliance": {{
-            "incident_ref": "RBI/CSITE/{pkg_name.split('.')[-1].upper()[:6]}",
-            "circular_section": "RBI Master Circular Section 7.4",
-            "mandates": ["Mandatory regulatory disclosure", "Firewall IP perimeter isolation"]
-        }}
-    }}
-    """
+    try:
+        from google.genai import types
 
-    api_result, mode_label = _call_gemini_fast(prompt)
+        model_candidates = [
+            "gemini-3.5-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
+        ]
 
-    if api_result and "brief" in api_result and "code_interpreter" in api_result:
-        raw_score = float(api_result.get("genai_score", 35.0))
+        data = None
+        used_model = ""
+        last_error = None
 
-        # 4. Enforce strict guardrails against false positives
+        for model_name in model_candidates:
+            for attempt in range(1, 3):  # 2 attempts per model
+                try:
+                    print(f"[M5] Invoking {model_name} (attempt {attempt}/2)...", flush=True)
+                    response = _GENAI_CLIENT.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            response_schema=ForensicReportSchema,
+                            temperature=0.2,
+                        ),
+                    )
+                    parsed = getattr(response, "parsed", None)
+                    if parsed is not None and hasattr(parsed, "model_dump"):
+                        data = parsed.model_dump()
+                    elif response and response.text:
+                        data = ForensicReportSchema.model_validate_json(
+                            _clean_json(response.text)
+                        ).model_dump()
+
+                    if data:
+                        used_model = model_name
+                        break
+                except Exception as exc:
+                    last_error = exc
+                    err_str = str(exc)
+                    print(
+                        f"[M5 WARN] {model_name} attempt {attempt} failed: {type(exc).__name__}: {err_str[:160]}",
+                        flush=True,
+                    )
+                    # Retry on transient 503/429 spikes before switching models
+                    if ("503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str) and attempt < 2:
+                        time.sleep(2.5)
+                        continue
+                    break
+            if data:
+                break
+
+        if not data:
+            print(f"[M5 ERROR] All Gemini models failed. Last error: {last_error}", flush=True)
+            logger.warning(f"[M5] Gemini structured synthesis failed: {last_error}")
+            return _generate_grounded_fallback(
+                pipeline_results,
+                bundle,
+                reason=type(last_error).__name__ if last_error else "empty_response",
+            )
+
+        raw_score = float(data.get("genai_score", 25.0))
         if is_official_bank:
             raw_score = min(15.0, raw_score)
             threat_level = "LOW"
-        elif is_benign_candidate and len(genuine_c2) == 0:
-            # Prevents GenAI hallucinations from elevating clean utility SDKs to trojan levels
+        elif is_benign_candidate:
             raw_score = min(25.0, raw_score)
             threat_level = "LOW"
         else:
-            threat_level = api_result.get("threat_level", "MEDIUM")
+            threat_level = str(data.get("threat_level", "MEDIUM")).upper()
 
-        clean_score = min(100.0, max(0.0, raw_score))
+        clean_score = round(min(100.0, max(0.0, raw_score)), 1)
+
+        module_snippets = _build_snippets_from_modules(bundle, is_official_bank)
+        gemini_snippets = data.get("code_snippets") or []
+        final_snippets = gemini_snippets if gemini_snippets else module_snippets
+        primary_code = final_snippets[0] if final_snippets else module_snippets[0]
+
+        kill_chain = data.get("kill_chain") or _build_grounded_kill_chain(bundle, is_official_bank)
 
         return {
             "module": "genai_synthesis",
@@ -384,12 +747,21 @@ def analyze_genai(pipeline_results: dict[str, Any]) -> dict[str, Any]:
             "genai_score": clean_score,
             "severity_score": clean_score,
             "threat_level": threat_level,
-            "brief": api_result.get("brief", {}),
-            "code_interpreter": api_result.get("code_interpreter", {}),
-            "kill_chain": api_result.get("kill_chain", []),
-            "rbi_compliance": api_result.get("rbi_compliance", {}),
-            "mode": mode_label,
+            "brief": data.get("brief", {}),
+            "code_interpreter": {
+                "file_name": primary_code.get("file_name", "Analysis.smali"),
+                "method_name": primary_code.get("method_name", "execute()"),
+                "smali_code": primary_code.get("smali_code", ""),
+                "plain_english_interpretation": primary_code.get("plain_english_interpretation", ""),
+                "bank_countermeasure": primary_code.get("bank_countermeasure", ""),
+            },
+            "code_snippets": final_snippets,
+            "kill_chain": kill_chain,
+            "rbi_compliance": data.get("rbi_compliance", {}),
+            "mode": f"google_genai ({used_model}, structured)",
             "completed_at": datetime.now(timezone.utc).isoformat(),
-        }
-
-    return _generate_deterministic_forensics(pipeline_results)
+    }
+    except Exception as exc:
+        print(f"[M5 ERROR] Live Gemini call failed: {type(exc).__name__}: {exc}", flush=True)
+        logger.warning(f"[M5] Gemini structured synthesis failed: {exc}")
+        return _generate_grounded_fallback(pipeline_results, bundle, reason=type(exc).__name__)
