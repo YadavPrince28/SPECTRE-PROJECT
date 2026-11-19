@@ -2,40 +2,68 @@
 
 import { useEffect, useState } from "react"
 
-export function RiskGauge({ value = 94 }: { value?: number }) {
+export function getRiskBand(score: number, isOfficialBank = false, verdict?: string) {
+  const clamped = Math.max(0, Math.min(100, Number.isFinite(score) ? score : 0))
+  const effectiveScore = isOfficialBank ? Math.min(15, clamped) : clamped
+  const upperVerdict = String(verdict ?? "").toUpperCase()
+
+  if (isOfficialBank || upperVerdict === "LOW" || effectiveScore <= 30) {
+    return {
+      tier: "LOW" as const,
+      label: "LOW",
+      color: "#10b981",
+      score: effectiveScore,
+    }
+  }
+  if (upperVerdict === "MODERATE" || upperVerdict === "MEDIUM" || effectiveScore <= 60) {
+    return {
+      tier: "MODERATE" as const,
+      label: "MODERATE",
+      color: "#f59e0b",
+      score: effectiveScore,
+    }
+  }
+  if (upperVerdict === "HIGH" || effectiveScore <= 80) {
+    return {
+      tier: "HIGH" as const,
+      label: "HIGH",
+      color: "#f97316",
+      score: effectiveScore,
+    }
+  }
+  return {
+    tier: "CRITICAL" as const,
+    label: "CRITICAL",
+    color: "#f43f5e",
+    score: effectiveScore,
+  }
+}
+
+export function RiskGauge({
+  value = 94,
+  verdict,
+  isOfficialBank = false,
+}: {
+  value?: number
+  verdict?: string
+  isOfficialBank?: boolean
+}) {
+  const band = getRiskBand(value, isOfficialBank, verdict)
+  const targetValue = Math.round(band.score)
   const [animated, setAnimated] = useState(0)
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(value), 200)
+    const t = setTimeout(() => setAnimated(targetValue), 150)
     return () => clearTimeout(t)
-  }, [value])
+  }, [targetValue])
 
   const radius = 80
-  const circumference = Math.PI * radius // semi would differ; using full circle minus gap
   const fullCircle = 2 * Math.PI * radius
-  const dash = (animated / 100) * fullCircle
-
-  // color by band
-  const band =
-    value <= 30
-      ? { label: "LOW", color: "#10b981" }
-      : value <= 60
-        ? { label: "MODERATE", color: "#f59e0b" }
-        : value <= 80
-          ? { label: "HIGH", color: "#f97316" }
-          : { label: "CRITICAL", color: "#f43f5e" }
+  const dash = (Math.max(0, Math.min(100, animated)) / 100) * fullCircle
 
   return (
     <div className="relative flex flex-col items-center justify-center">
       <svg width="200" height="200" viewBox="0 0 200 200" className="-rotate-90">
-        <defs>
-          <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="40%" stopColor="#f59e0b" />
-            <stop offset="70%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#f43f5e" />
-          </linearGradient>
-        </defs>
         <circle
           cx="100"
           cy="100"
@@ -49,12 +77,12 @@ export function RiskGauge({ value = 94 }: { value?: number }) {
           cy="100"
           r={radius}
           fill="none"
-          stroke="url(#gauge-grad)"
+          stroke={band.color}
           strokeWidth="14"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${fullCircle}`}
           style={{
-            transition: "stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1)",
+            transition: "stroke-dasharray 1.1s cubic-bezier(0.22,1,0.36,1), stroke 0.3s ease",
             filter: `drop-shadow(0 0 8px ${band.color})`,
           }}
         />

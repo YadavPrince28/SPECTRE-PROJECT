@@ -15,13 +15,65 @@ import {
   RUNTIME_DELTA,
   STORYBOARD,
 } from "@/lib/spectre-data"
-import { RiskGauge } from "./risk-gauge"
+import { getRiskBand, RiskGauge } from "./risk-gauge"
 import { PhoneFrame } from "./phone-frame"
 
-export function AnalysisTerminal({ result }: { result: any }) {
-  const riskScore = result?.final_score?.score ?? 94
-  const verdict = result?.final_score?.verdict ?? "CRITICAL"
+const BANK_PACKAGE_TOKENS = [
+  "com.boi.ua.android",
+  "com.sbi",
+  "com.axis",
+  "com.icici",
+  "com.hdfc",
+  "com.canara",
+  "com.kotak",
+  "bankofbaroda",
+]
 
+function detectOfficialBank(result: any, packageName: string, authenticityStatus: string): boolean {
+  const pkgLower = String(packageName ?? "").toLowerCase()
+  const authUpper = String(authenticityStatus ?? "").toUpperCase()
+  const socialArchetype = String(result?.social?.archetype ?? "").toUpperCase()
+  const socialAuthStatus = String(result?.social?.authenticity?.status ?? "").toUpperCase()
+
+  return (
+    authUpper === "AUTHENTIC_OFFICIAL_BANK" ||
+    authUpper === "VERIFIED" ||
+    socialArchetype === "BENIGN_OFFICIAL_BANK" ||
+    socialAuthStatus === "AUTHENTIC_OFFICIAL_BANK" ||
+    BANK_PACKAGE_TOKENS.some((tok) => pkgLower.includes(tok))
+  )
+}
+
+function getTierStyles(tier: "LOW" | "MODERATE" | "HIGH" | "CRITICAL") {
+  switch (tier) {
+    case "LOW":
+      return {
+        cardClass: "border-emerald-500/40 shadow-[0_0_16px_-4px_rgba(16,185,129,0.35)]",
+        scoreClass: "text-emerald-400",
+        pillClass: "bg-emerald-500/15 text-emerald-400",
+      }
+    case "MODERATE":
+      return {
+        cardClass: "border-amber-500/40 shadow-[0_0_16px_-4px_rgba(245,158,11,0.35)]",
+        scoreClass: "text-amber-400",
+        pillClass: "bg-amber-500/15 text-amber-400",
+      }
+    case "HIGH":
+      return {
+        cardClass: "border-orange-500/40 shadow-[0_0_16px_-4px_rgba(249,115,22,0.35)]",
+        scoreClass: "text-orange-400",
+        pillClass: "bg-orange-500/15 text-orange-400",
+      }
+    default:
+      return {
+        cardClass: "animate-breathe-crimson border-rose-500/40",
+        scoreClass: "text-rose-400",
+        pillClass: "bg-rose-500/15 text-rose-400",
+      }
+  }
+}
+
+export function AnalysisTerminal({ result }: { result: any }) {
   const packageName =
     result?.static?.package_name ??
     result?.static?.package ??
@@ -30,6 +82,13 @@ export function AnalysisTerminal({ result }: { result: any }) {
   const authenticity = result?.static?.authenticity ?? {}
   const authenticityStatus = authenticity?.status ?? "UNVERIFIED"
   const authenticityBank = authenticity?.bank_name ?? ""
+  const isOfficialBank = detectOfficialBank(result, packageName, authenticityStatus)
+
+  const rawScore = Number(result?.final_score?.score ?? 94)
+  const rawVerdict = result?.final_score?.verdict ?? "CRITICAL"
+  const band = getRiskBand(rawScore, isOfficialBank, rawVerdict)
+  const riskScore = band.score
+  const verdict = band.label
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,15 +96,22 @@ export function AnalysisTerminal({ result }: { result: any }) {
         packageName={packageName}
         authenticityStatus={authenticityStatus}
         authenticityBank={authenticityBank}
+        isOfficialBank={isOfficialBank}
       />
       <QuickMetrics
         result={result}
         riskScore={riskScore}
         verdict={verdict}
+        isOfficialBank={isOfficialBank}
       />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <LeftColumn result={result} riskScore={riskScore} />
+        <LeftColumn
+          result={result}
+          riskScore={riskScore}
+          verdict={verdict}
+          isOfficialBank={isOfficialBank}
+        />
         <RightColumn result={result} />
       </div>
 
@@ -60,11 +126,20 @@ function Header({
   packageName,
   authenticityStatus,
   authenticityBank,
+  isOfficialBank,
 }: {
   packageName: string
   authenticityStatus: string
   authenticityBank: string
+  isOfficialBank: boolean
 }) {
+  const badgeStyle =
+    isOfficialBank || authenticityStatus === "VERIFIED" || authenticityStatus === "AUTHENTIC_OFFICIAL_BANK"
+      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+      : authenticityStatus === "CERTIFICATE_MISMATCH"
+        ? "border-red-500/30 bg-red-500/10 text-red-400"
+        : "border-slate-700 bg-slate-800/50 text-slate-400"
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
@@ -79,14 +154,10 @@ function Header({
         <span
           className={cn(
             "ml-2 inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold",
-            authenticityStatus === "VERIFIED"
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-              : authenticityStatus === "CERTIFICATE_MISMATCH"
-                ? "border-red-500/30 bg-red-500/10 text-red-400"
-                : "border-slate-700 bg-slate-800/50 text-slate-400",
+            badgeStyle,
           )}
         >
-          AUTHENTICITY: {authenticityStatus}
+          AUTHENTICITY: {isOfficialBank && authenticityStatus === "UNVERIFIED" ? "OFFICIAL_BANK" : authenticityStatus}
         </span>
         {authenticityBank && (
           <span className="ml-2 font-mono text-[10px] text-slate-500">
@@ -102,48 +173,71 @@ function QuickMetrics({
   result,
   riskScore,
   verdict,
+  isOfficialBank,
 }: {
   result: any
   riskScore: number
   verdict: string
+  isOfficialBank: boolean
 }) {
   const behavioral = result?.behavioral ?? {}
   const closestFamily = behavioral?.closest_family ?? "No behavioral match"
-  const behavioralScore = behavioral?.behavioral_score ?? 0
-  const classScore = behavioral?.class_idf_score ?? 0
-  const packageScore = behavioral?.package_markov_score ?? 0
-  const margin = behavioral?.top1_margin_percent ?? 0
-  
+  const behavioralScore = Number(behavioral?.behavioral_score ?? 0)
+  const classScore = Number(behavioral?.class_idf_score ?? 0)
+  const packageScore = Number(behavioral?.package_markov_score ?? 0)
+  const margin = Number(behavioral?.top1_margin_percent ?? 0)
+
+  const band = getRiskBand(riskScore, isOfficialBank, verdict)
+  const tierStyles = getTierStyles(band.tier)
+
   // Dual-Layer Network Threat Resolution
-  const exfiltrationEvents = result?.dynamic?.exfiltration_events ?? []
-  const activeStreams = result?.dynamic?.active_streams?.length ?? exfiltrationEvents.length
-  const latentHosts =
-    result?.dynamic?.latent_c2_targets ??
-    result?.dynamic?.network_delta?.dormant_static_hosts ??
-    result?.static?.c2_urls ??
-    []
+  const exfiltrationEvents = isOfficialBank ? [] : (result?.dynamic?.exfiltration_events ?? [])
+  const activeStreams = isOfficialBank
+    ? 0
+    : (result?.dynamic?.active_streams?.length ?? exfiltrationEvents.length)
+  const latentHosts = isOfficialBank
+    ? []
+    : (
+        result?.dynamic?.latent_c2_targets ??
+        result?.dynamic?.network_delta?.dormant_static_hosts ??
+        result?.static?.c2_urls ??
+        []
+      )
   const latentCount = latentHosts.length
 
-  const networkScore =
-    result?.final_score?.component_scores?.network_exfiltration ??
-    (exfiltrationEvents.length > 0 ? 100 : latentCount > 0 ? 25 : 0)
+  const networkScore = isOfficialBank
+    ? 0
+    : (
+        result?.final_score?.component_scores?.network_exfiltration ??
+        (exfiltrationEvents.length > 0 ? 100 : latentCount > 0 ? 25 : 0)
+      )
 
-  const isNetworkRisk = exfiltrationEvents.length > 0 || networkScore > 0 || latentCount > 0
+  const isNetworkRisk = !isOfficialBank && (exfiltrationEvents.length > 0 || networkScore > 0 || latentCount > 0)
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       {/* FINAL RISK */}
-      <div className="glass-card animate-breathe-crimson relative overflow-hidden rounded-2xl border border-rose-500/40 p-5">
+      <div
+        className={cn(
+          "glass-card relative overflow-hidden rounded-2xl border p-5 transition-colors",
+          tierStyles.cardClass,
+        )}
+      >
         <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
           Composite Risk Vector
         </p>
         <div className="mt-2 flex items-end gap-2">
-          <span className="font-mono text-4xl font-bold text-rose-400">
+          <span className={cn("font-mono text-4xl font-bold", tierStyles.scoreClass)}>
             {Math.round(riskScore)}
           </span>
           <span className="mb-1 font-mono text-sm text-slate-500">/100</span>
         </div>
-        <span className="mt-3 inline-flex items-center gap-1 rounded-md bg-rose-500/15 px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-rose-400">
+        <span
+          className={cn(
+            "mt-3 inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] font-bold tracking-wider",
+            tierStyles.pillClass,
+          )}
+        >
           <CircleAlert className="size-3" />
           {verdict}
         </span>
@@ -238,7 +332,17 @@ function QuickMetrics({
   )
 }
 
-function LeftColumn({ result, riskScore }: { result: any; riskScore: number }) {
+function LeftColumn({
+  result,
+  riskScore,
+  verdict,
+  isOfficialBank,
+}: {
+  result: any
+  riskScore: number
+  verdict: string
+  isOfficialBank: boolean
+}) {
   return (
     <div className="flex flex-col gap-6">
       <div className="glass-card rounded-2xl border border-slate-800 p-5">
@@ -246,7 +350,11 @@ function LeftColumn({ result, riskScore }: { result: any; riskScore: number }) {
           <Activity className="size-4 text-cyan-400" /> Multi-Dimensional Risk Gauge
         </h3>
         <div className="flex items-center justify-center py-2">
-          <RiskGauge value={Math.round(riskScore)} />
+          <RiskGauge
+            value={Math.round(riskScore)}
+            verdict={verdict}
+            isOfficialBank={isOfficialBank}
+          />
         </div>
         <div className="mt-2 grid grid-cols-4 gap-1 text-center font-mono text-[9px]">
           <span className="text-emerald-400">LOW 0-30</span>
@@ -256,12 +364,18 @@ function LeftColumn({ result, riskScore }: { result: any; riskScore: number }) {
         </div>
       </div>
 
-      <PermissionMatrix result={result} />
+      <PermissionMatrix result={result} isOfficialBank={isOfficialBank} />
     </div>
   )
 }
 
-function PermissionMatrix({ result }: { result: any }) {
+function PermissionMatrix({
+  result,
+  isOfficialBank,
+}: {
+  result: any
+  isOfficialBank: boolean
+}) {
   const permissions = result?.static?.permission_heatmap ?? []
   const [showAll, setShowAll] = useState(false)
 
@@ -284,9 +398,9 @@ function PermissionMatrix({ result }: { result: any }) {
       </h3>
 
       <div className="mb-4 flex flex-wrap items-center gap-3 font-mono text-[10px]">
-        <span className="text-red-400">{highRiskPermissions.length} high-risk</span>
+        <span className="text-rose-400">{highRiskPermissions.length} high-risk</span>
         <span className="text-slate-600">·</span>
-        <span className="text-slate-400">{criticalCount} critical</span>
+        <span className="text-amber-400">{criticalCount} critical</span>
         <span className="text-slate-600">·</span>
         <span className="text-slate-500">{permissions.length} total declared</span>
       </div>
@@ -295,7 +409,9 @@ function PermissionMatrix({ result }: { result: any }) {
         {displayedPermissions.length > 0 ? (
           displayedPermissions.map((p: any) => {
             const risk = String(p?.risk ?? "").toUpperCase()
-            const isCritical = risk === "CRITICAL" || risk === "HIGH"
+            const isCritical = risk === "CRITICAL"
+            const isHigh = risk === "HIGH"
+            const isElevated = isCritical || isHigh
             const name =
               p?.short_name ??
               p?.permission?.split(".").pop() ??
@@ -308,11 +424,13 @@ function PermissionMatrix({ result }: { result: any }) {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[11px]",
                   isCritical
-                    ? "border border-red-500/30 bg-red-950/50 text-red-400 shadow-[0_0_10px_-2px] shadow-red-500/40"
-                    : "border border-slate-700 bg-slate-800/50 text-slate-400",
+                    ? "border border-rose-500/40 bg-rose-950/50 text-rose-400 shadow-[0_0_10px_-2px] shadow-rose-500/40"
+                    : isHigh
+                      ? "border border-amber-500/40 bg-amber-950/40 text-amber-300"
+                      : "border border-slate-700 bg-slate-800/50 text-slate-400",
                 )}
               >
-                {isCritical && <AlertTriangle className="size-3" />}
+                {isElevated && <AlertTriangle className="size-3" />}
                 {name}
               </span>
             )
@@ -337,15 +455,17 @@ function PermissionMatrix({ result }: { result: any }) {
       )}
 
       <p className="mt-4 font-mono text-[10px] text-slate-500">
-        <span className="text-red-400">{highRiskPermissions.length} high-risk permissions</span> detected ·{" "}
-        <span className="text-slate-400">{criticalCount} critical</span> · capable of SMS interception, accessibility hijack & overlay attacks.
+        <span className="text-rose-400">{highRiskPermissions.length} high-risk permissions</span>{" "}
+        detected · <span className="text-amber-400">{criticalCount} critical</span> ·{" "}
+        {isOfficialBank
+          ? "verified official banking app; permissions require contextual audit."
+          : "capable of SMS interception, accessibility hijack & overlay attacks."}
       </p>
     </div>
   )
 }
 
 function RightColumn({ result }: { result?: any }) {
-  // Read storyboard, fallback to screenplay, fallback to spectre-data
   const customStoryboard =
     result?.social?.storyboard ??
     result?.social?.screenplay ??
@@ -354,12 +474,10 @@ function RightColumn({ result }: { result?: any }) {
 
   const [activeStepId, setActiveStepId] = useState<number>(1)
 
-  // Match on either 'id' or 'step'
   const activeStep =
     customStoryboard.find((s: any) => (s.id ?? s.step) === activeStepId) ||
     customStoryboard[0]
 
-  // Extract clean brand name from real APK analysis
   const detectedBrand =
     result?.social?.app_name ||
     result?.social?.brand_name ||
@@ -375,7 +493,6 @@ function RightColumn({ result }: { result?: any }) {
       </h3>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_auto]">
-        {/* Timeline Stepper */}
         <ol className="relative flex flex-col gap-1">
           {customStoryboard.map((s: any, i: number) => {
             const stepNumber = s.id ?? s.step ?? i + 1
@@ -419,7 +536,6 @@ function RightColumn({ result }: { result?: any }) {
           })}
         </ol>
 
-        {/* Dynamic Mobile Viewport */}
         <PhoneFrame activeStep={activeStep} stepId={activeStepId} brandName={detectedBrand} />
       </div>
     </div>
