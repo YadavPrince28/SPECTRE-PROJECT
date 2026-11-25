@@ -19,6 +19,8 @@ demo_apks/
 models/xgboost_scorer.pkl
 models/spacy_classifier/
 models/drebin_graphs_v2/
+_batch_in.pkl
+models/drebin_graphs_v3/full_drebin_sample_dna_cache.pkl
 *.pkl
 *.gpickle
 tools/__pycache__/
@@ -29,3 +31,5 @@ androguard.db
 androguard.db-shm
 androguard.db-wal
 *.quark.log
+
+models/drebin_graphs_v3/*.pkl

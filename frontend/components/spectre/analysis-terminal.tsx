@@ -437,7 +437,7 @@ function PermissionMatrix({
           })
         ) : (
           <span className="font-mono text-[11px] text-slate-500">
-            No declared permissions returned by Module 1.
+            No declared critical permissions returned by Module 1.
           </span>
         )}
       </div>
