@@ -11,6 +11,9 @@ spectre-env/
 # Environment variables
 .env
 .env.example
+backend/_backup_pre_v3
+experiments/
+demo_apks/
 
 # New additions
 models/xgboost_scorer.pkl

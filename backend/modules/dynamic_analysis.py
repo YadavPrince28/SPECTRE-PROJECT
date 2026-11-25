@@ -415,18 +415,23 @@ def _build_behavior_delta(
     declared_perms: list[str],
     runtime_api_dump: str,
     exfiltration_events: list[dict[str, Any]],
+    sandbox_observed: bool = True,
+    is_official_bank: bool = False,
 ) -> list[dict[str, Any]]:
     delta_rows = []
     declared_set = set(declared_perms or [])
-    runtime_text = runtime_api_dump.lower()
+    runtime_text = (runtime_api_dump or "").lower()
 
-    for event in exfiltration_events:
+    for event in exfiltration_events or []:
         runtime_text += f" {str(event.get('detail', '')).lower()} {str(event.get('type', '')).lower()}"
 
     for item in MONITORED_CAPABILITIES:
         perm_name = item["permission"]
         is_declared = any(p in declared_set for p in item["manifest_perms"])
-        is_runtime = any(sig in runtime_text for sig in item["runtime_signatures"])
+        is_runtime = bool(sandbox_observed) and any(sig in runtime_text for sig in item["runtime_signatures"])
+
+        if not is_declared and not is_runtime:
+            continue
 
         if is_declared and is_runtime:
             note = item["active_note"]
@@ -434,11 +439,15 @@ def _build_behavior_delta(
         elif not is_declared and is_runtime:
             note = item["hidden_note"]
             status_tag = "HIDDEN_THREAT"
-        elif is_declared and not is_runtime:
-            note = item["decoy_note"]
-            status_tag = "DECOY"
+        elif is_official_bank:
+            note = "Declared in official bank manifest; no runtime abuse observed"
+            status_tag = "OFFICIAL_DECLARED"
+        elif not sandbox_observed:
+            note = "Declared in manifest; dynamic sandbox telemetry unavailable"
+            status_tag = "UNOBSERVED"
         else:
-            continue
+            note = "Declared in manifest; not invoked in observed runtime window"
+            status_tag = "DORMANT_DECLARED"
 
         delta_rows.append({
             "permission": perm_name,
@@ -450,7 +459,6 @@ def _build_behavior_delta(
             "status_tag": status_tag,
         })
     return delta_rows
-
 
 def _uninstall_package_from_device(package_name: str) -> None:
     """Terminates and purges the application package from the emulator environment[cite: 2]."""

@@ -485,6 +485,9 @@ function RightColumn({ result }: { result?: any }) {
     result?.static?.authenticity?.bank_name ||
     result?.static?.package_name?.split(".").pop() ||
     "Application"
+  const riskPermissions = (result?.static?.dangerous_permissions ?? [])
+    .map((d: any) => d?.permission)
+    .filter(Boolean)
 
   return (
     <div className="glass-card flex flex-col rounded-2xl border border-slate-800 p-5">
@@ -536,7 +539,14 @@ function RightColumn({ result }: { result?: any }) {
           })}
         </ol>
 
-        <PhoneFrame activeStep={activeStep} stepId={activeStepId} brandName={detectedBrand} />
+        <PhoneFrame
+          activeStep={activeStep}
+          stepId={activeStepId}
+          brandName={detectedBrand}
+          packageName={result?.static?.package_name}
+          socialData={result?.social}
+          riskPermissions={riskPermissions}
+        />
       </div>
     </div>
   )
@@ -620,9 +630,7 @@ function MitmConsole({ dynamic }: { dynamic?: any }) {
 }
 
 function RuntimeDelta({ dynamic }: { dynamic?: any }) {
-  const rawDelta = dynamic?.behavior_delta
-  const hasRealDelta = Array.isArray(rawDelta) && rawDelta.length > 0
-  const deltaList = hasRealDelta ? rawDelta : RUNTIME_DELTA
+  const rawDelta = Array.isArray(dynamic?.behavior_delta) ? dynamic.behavior_delta : []
 
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-5">
@@ -632,61 +640,67 @@ function RuntimeDelta({ dynamic }: { dynamic?: any }) {
       <p className="mb-4 text-[11px] text-slate-500">
         Declared Manifest Permissions vs Verified Runtime Execution Logs — exposing obfuscated hidden execution paths.
       </p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left font-mono text-xs">
-          <thead>
-            <tr className="border-b border-slate-800 text-slate-500">
-              <th className="px-3 py-2 font-medium">Permission / Capability</th>
-              <th className="px-3 py-2 font-medium">Declared</th>
-              <th className="px-3 py-2 font-medium">Runtime</th>
-              <th className="px-3 py-2 font-medium">Analyst Note</th>
-            </tr>
-          </thead>
-          <tbody>
-            {deltaList.map((r: any, idx: number) => {
-              const perm = r.permission ?? `CAPABILITY_${idx}`
-              const isDeclared =
-                typeof r.declared_bool === "boolean"
-                  ? r.declared_bool
-                  : r.declared === "YES" || Boolean(r.declared)
-              const isRuntime =
-                typeof r.runtime_bool === "boolean"
-                  ? r.runtime_bool
-                  : r.runtime === "YES" || Boolean(r.runtime)
-              const note = r.analyst_note ?? r.note ?? ""
-              const hidden =
-                r.status_tag === "HIDDEN_THREAT" || (!isDeclared && isRuntime)
-              const decoy =
-                r.status_tag === "DECOY" || (isDeclared && !isRuntime)
+      {rawDelta.length === 0 ? (
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-6 text-center font-mono text-xs text-slate-500">
+          No monitored permission delta recorded from dynamic analysis for this APK.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left font-mono text-xs">
+            <thead>
+              <tr className="border-b border-slate-800 text-slate-500">
+                <th className="px-3 py-2 font-medium">Permission / Capability</th>
+                <th className="px-3 py-2 font-medium">Declared</th>
+                <th className="px-3 py-2 font-medium">Runtime</th>
+                <th className="px-3 py-2 font-medium">Analyst Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rawDelta.map((r: any, idx: number) => {
+                const perm = r.permission ?? `CAPABILITY_${idx}`
+                const isDeclared =
+                  typeof r.declared_bool === "boolean"
+                    ? r.declared_bool
+                    : r.declared === "YES" || Boolean(r.declared)
+                const isRuntime =
+                  typeof r.runtime_bool === "boolean"
+                    ? r.runtime_bool
+                    : r.runtime === "YES" || Boolean(r.runtime)
+                const note = r.analyst_note ?? r.note ?? ""
+                const hidden =
+                  r.status_tag === "HIDDEN_THREAT" || (!isDeclared && isRuntime)
+                const active =
+                  r.status_tag === "ACTIVE" || (isDeclared && isRuntime)
 
-              return (
-                <tr key={perm + idx} className="border-b border-slate-800/60">
-                  <td className="px-3 py-2.5 text-slate-300">{perm}</td>
-                  <td className="px-3 py-2.5">
-                    <Cell on={isDeclared} />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <Cell on={isRuntime} alarm={hidden} />
-                  </td>
-                  <td
-                    className={cn(
-                      "px-3 py-2.5",
-                      hidden
-                        ? "text-rose-400 font-semibold"
-                        : decoy
-                          ? "text-amber-400"
-                          : "text-slate-400",
-                    )}
-                  >
-                    {hidden && "⚠ "}
-                    {note}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+                return (
+                  <tr key={perm + idx} className="border-b border-slate-800/60">
+                    <td className="px-3 py-2.5 text-slate-300">{perm}</td>
+                    <td className="px-3 py-2.5">
+                      <Cell on={isDeclared} />
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Cell on={isRuntime} alarm={hidden} />
+                    </td>
+                    <td
+                      className={cn(
+                        "px-3 py-2.5",
+                        hidden
+                          ? "text-rose-400 font-semibold"
+                          : active
+                            ? "text-amber-400"
+                            : "text-slate-400",
+                      )}
+                    >
+                      {hidden && "⚠ "}
+                      {note}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

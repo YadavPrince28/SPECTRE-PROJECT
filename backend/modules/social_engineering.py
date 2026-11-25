@@ -25,6 +25,19 @@ for _logger in [
     _l.setLevel(logging.CRITICAL)
     _l.propagate = False
 
+URL_REGEX = re.compile(rb"https?://[a-zA-Z0-9\.\-\_/\:\?\=\&\%]{6,120}")
+BENIGN_URL_TOKENS = (
+    "schemas.android.com",
+    "w3.org",
+    "google.com",
+    "googleapis.com",
+    "gstatic.com",
+    "apache.org",
+    "github.com",
+    "xmlpull.org",
+    "openssl.org",
+)
+
 
 class ComprehensiveSocialEngineeringAnalyzer:
     def __init__(self) -> None:
@@ -93,46 +106,42 @@ class ComprehensiveSocialEngineeringAnalyzer:
         devnull = io.StringIO()
         with contextlib.redirect_stderr(devnull), contextlib.redirect_stdout(devnull):
             try:
-                apk_cls = None
-                try:
-                    from androguard.core.apk import APK as apk_cls
-                except ImportError:
-                    try:
-                        from androguard.core.apk import APK as apk_cls
-                    except ImportError:
-                        pass
+                from androguard.core.apk import APK as apk_cls
 
-                if apk_cls is not None:
-                    apk_obj = apk_cls(str(apk_path))
-                    label = apk_obj.get_app_name()
-                    if label and isinstance(label, str) and len(label.strip()) > 1:
-                        meta["app_name"] = label.strip()
+                apk_obj = apk_cls(str(apk_path))
+                label = apk_obj.get_app_name()
+                if label and isinstance(label, str) and len(label.strip()) > 1:
+                    meta["app_name"] = label.strip()
 
-                    pkg = apk_obj.get_package()
-                    if pkg and isinstance(pkg, str) and len(pkg.strip()) > 1:
-                        meta["package_name"] = pkg.strip()
+                pkg = apk_obj.get_package()
+                if pkg and isinstance(pkg, str) and len(pkg.strip()) > 1:
+                    meta["package_name"] = pkg.strip()
 
-                    act = apk_obj.get_main_activity()
-                    if act and isinstance(act, str):
-                        meta["main_activity"] = act.split(".")[-1]
+                act = apk_obj.get_main_activity()
+                if act and isinstance(act, str):
+                    meta["main_activity"] = act.split(".")[-1]
             except Exception:
                 pass
 
         return meta
 
-    def extract_strings_dual_encoding(self, apk_path: Path) -> tuple[list[str], list[str]]:
+    def extract_strings_dual_encoding(
+        self, apk_path: Path
+    ) -> tuple[list[str], list[str], list[str]]:
         """
-        Extracts both UTF-8 and UTF-16LE strings and identifies structural
-        deceptive UI capabilities in raw bytecode and manifest.
+        Extracts UTF-8 & UTF-16LE strings, structural deceptive capabilities,
+        and non-benign URLs from raw bytecode and resources.arsc.
         """
         if not apk_path.is_file():
-            return [], []
+            return [], [], []
 
         extracted_strings: list[str] = []
         detected_capabilities: list[str] = []
+        extracted_urls: list[str] = []
+        seen_urls: set[str] = set()
 
-        ascii_regex = re.compile(rb"[a-zA-Z0-9\s\.\,\:\;\-\_\!\?\@\#\$\%]{4,80}")
-        utf16_regex = re.compile(rb"(?:[a-zA-Z0-9\s\.\,\:\;\-\_\!\?\@\#\$\%]\x00){4,80}")
+        ascii_regex = re.compile(rb"[a-zA-Z0-9\s\.\,\:\;\-\_\!\?\@\#\$\%]{4,120}")
+        utf16_regex = re.compile(rb"(?:[a-zA-Z0-9\s\.\,\:\;\-\_\!\?\@\#\$\%]\x00){4,120}")
 
         combined_code_bytes = b""
 
@@ -144,23 +153,25 @@ class ComprehensiveSocialEngineeringAnalyzer:
                         try:
                             entry_data = z.read(name)[: 4 * 1024 * 1024]
                             combined_code_bytes += entry_data
-                            # Extract ASCII strings from code
                             for m in ascii_regex.findall(entry_data):
                                 s = m.decode("ascii", errors="ignore").strip()
                                 if len(s) > 3 and not s.startswith(("http", "android/", "Landroid", "androidx/")):
                                     extracted_strings.append(s)
+                            for u_m in URL_REGEX.findall(entry_data):
+                                u = u_m.decode("ascii", errors="ignore").strip()
+                                if u not in seen_urls and not any(b in u.lower() for b in BENIGN_URL_TOKENS):
+                                    seen_urls.add(u)
+                                    extracted_urls.append(u)
                         except Exception:
                             continue
 
                     elif lower == "resources.arsc":
                         try:
                             arsc_data = z.read(name)[: 4 * 1024 * 1024]
-                            # 1. UTF-8 strings
                             for m in ascii_regex.findall(arsc_data):
                                 s = m.decode("ascii", errors="ignore").strip()
                                 if len(s) > 3 and not s.startswith(("http", "android/")):
                                     extracted_strings.append(s)
-                            # 2. UTF-16LE strings (critical for compiled resources.arsc)
                             for m in utf16_regex.findall(arsc_data):
                                 s = m.decode("utf-16le", errors="ignore").strip()
                                 if len(s) > 3 and not s.startswith(("http", "android/")):
@@ -170,9 +181,6 @@ class ComprehensiveSocialEngineeringAnalyzer:
         except Exception:
             pass
 
-        # ---------------------------------------------------------------------
-        # Structural Deceptive Mechanism Detection (Bytecode & Manifest)
-        # ---------------------------------------------------------------------
         if b"BIND_ACCESSIBILITY_SERVICE" in combined_code_bytes or b"AccessibilityService" in combined_code_bytes:
             detected_capabilities.append("ACCESSIBILITY_HIJACK")
         if b"DEVICE_ADMIN" in combined_code_bytes or b"ADD_DEVICE_ADMIN" in combined_code_bytes or b"DeviceAdminReceiver" in combined_code_bytes:
@@ -184,7 +192,33 @@ class ComprehensiveSocialEngineeringAnalyzer:
         if b"setComponentEnabledSetting" in combined_code_bytes and b"DONT_KILL_APP" in combined_code_bytes:
             detected_capabilities.append("STEALTH_ICON_HIDING")
 
-        return extracted_strings[:4000], detected_capabilities
+        return extracted_strings[:4000], detected_capabilities, extracted_urls[:8]
+
+    def _find_evidence_sentences(
+        self, strings: list[str], matched_phrases: set[str], limit: int = 3
+    ) -> list[str]:
+        """Finds clean, human-readable strings from the APK containing spaCy-matched phrases."""
+        if not matched_phrases:
+            return []
+        hits: list[str] = []
+        seen: set[str] = set()
+        for s in strings:
+            clean = " ".join(s.split())
+            # Prefer human-readable phrases (contains spaces, not a class/path token)
+            if len(clean) < 6 or len(clean) > 110 or " " not in clean:
+                continue
+            if "/" in clean or clean.startswith(("com.", "org.", "io.", "java.")):
+                continue
+            low = clean.lower()
+            if low in seen:
+                continue
+            if any(p in low for p in matched_phrases):
+                seen.add(low)
+                hits.append(clean)
+                if len(hits) >= limit:
+                    break
+        # Fallback to matched phrases themselves if only short tokens exist
+        return hits if hits else sorted(matched_phrases)[:limit]
 
     def analyze(
         self,
@@ -195,13 +229,13 @@ class ComprehensiveSocialEngineeringAnalyzer:
     ) -> dict[str, Any]:
         p = Path(apk_path)
         meta = self.extract_app_metadata(p)
-        strings, capabilities = self.extract_strings_dual_encoding(p)
+        strings, capabilities, extracted_urls = self.extract_strings_dual_encoding(p)
 
         app_name = meta["app_name"]
         pkg = meta["package_name"]
         main_act = meta["main_activity"]
 
-        # 1. NLP Pattern Matching on Decoded Strings
+        # 1. spaCy NLP Pattern Matching on Decoded Strings
         full_corpus = " . ".join(strings).lower()
         doc = self.nlp(full_corpus[:150000])
         matches = self.phrase_matcher(doc)
@@ -210,14 +244,10 @@ class ComprehensiveSocialEngineeringAnalyzer:
         for match_id, start, end in matches:
             cat_name = self.nlp.vocab.strings[match_id]
             span_text = doc[start:end].text
-            if cat_name not in matched_categories:
-                matched_categories[cat_name] = set()
-            matched_categories[cat_name].add(span_text)
+            matched_categories.setdefault(cat_name, set()).add(span_text)
 
-        # 2. Score Calculation: Blend Structural Indicators with NLP Lures
+        # 2. Score Calculation
         raw_score = 0.0
-
-        # Structural capability contributions
         capability_weights = {
             "ACCESSIBILITY_HIJACK": 35.0,
             "DEVICE_ADMIN_COERCION": 30.0,
@@ -228,65 +258,118 @@ class ComprehensiveSocialEngineeringAnalyzer:
         for cap in capabilities:
             raw_score += capability_weights.get(cap, 20.0)
 
-        # Linguistic lure contributions
         for cat, phrases in matched_categories.items():
             base_w = self.categories[cat]["weight"]
             raw_score += base_w * min(2.0, 1.0 + (len(phrases) - 1) * 0.25)
 
         final_score = min(100.0, round(raw_score, 2))
 
-        # Check threat status
         static_res = kwargs.get("static_result") or {}
-        perm_score = float(static_res.get("permission_score", 0.0))
+        perm_score = float(static_res.get("permission_score", 0.0) or static_res.get("permission_risk", 0.0))
+        raw_static_perms = [
+            (d.get("permission") if isinstance(d, dict) else str(d))
+            for d in (static_res.get("dangerous_permissions") or static_res.get("permissions") or [])
+        ]
+        short_perms = [p_name.split(".")[-1] for p_name in raw_static_perms if p_name][:3]
+
         is_threat = (final_score >= 25.0) or (len(capabilities) > 0) or (perm_score >= 55.0)
 
-        # ---------------------------------------------------------------------
-        # Synchronized Storyboard Definition (matches phone-frame.tsx props)
-        # ---------------------------------------------------------------------
-        if is_threat and (final_score > 0 or len(capabilities) > 0):
-            # Dynamic summary of detected traps
-            active_traps = []
-            if "ACCESSIBILITY_HIJACK" in capabilities:
-                active_traps.append("Accessibility takeover")
-            if "DEVICE_ADMIN_COERCION" in capabilities:
-                active_traps.append("Device Administrator lock")
-            if "OVERLAY_MASQUERADE" in capabilities:
-                active_traps.append("Overlay window spoofing")
-            if "FAKE_UPDATE_DROPPER" in capabilities:
-                active_traps.append("Secondary payload installation")
+        # Pick primary archetype for UI header
+        if "CREDENTIAL_HARVEST" in matched_categories:
+            archetype = "CREDENTIAL_PHISH"
+        elif "PRIVILEGE_COERCION" in matched_categories or "ACCESSIBILITY_HIJACK" in capabilities:
+            archetype = "PRIVILEGE_TRAP"
+        elif "MASQUERADE_UPDATE" in matched_categories or "FAKE_UPDATE_DROPPER" in capabilities:
+            archetype = "FAKE_UPDATE_LURE"
+        elif "SCAREWARE_URGENCY" in matched_categories:
+            archetype = "SCAREWARE_LURE"
+        else:
+            archetype = "GENERAL"
 
-            trap_detail = ", ".join(active_traps[:2]) if active_traps else "Privilege elevation requested"
+        # 3. Extract Real Evidence Sentences per Stage
+        ev_masq = self._find_evidence_sentences(strings, matched_categories.get("MASQUERADE_UPDATE", set()))
+        ev_urg = self._find_evidence_sentences(
+            strings,
+            matched_categories.get("SCAREWARE_URGENCY", set()) | matched_categories.get("PRIVILEGE_COERCION", set()),
+        )
+        ev_cred = self._find_evidence_sentences(strings, matched_categories.get("CREDENTIAL_HARVEST", set()))
+
+        # Build real capability/permission trap list (never hardcode Accessibility if absent!)
+        cap_labels = {
+            "ACCESSIBILITY_HIJACK": "Accessibility Service takeover",
+            "DEVICE_ADMIN_COERCION": "Device Administrator lock",
+            "OVERLAY_MASQUERADE": "Screen overlay spoofing",
+            "FAKE_UPDATE_DROPPER": "Unknown-source APK installer",
+            "STEALTH_ICON_HIDING": "Launcher icon hiding",
+        }
+        active_traps = [cap_labels[c] for c in capabilities if c in cap_labels]
+        if not active_traps and short_perms:
+            active_traps = short_perms[:2]
+        trap_detail = ", ".join(active_traps[:2]) if active_traps else "No coercive permissions detected"
+
+        # Real credential input labels extracted from spaCy matches
+        real_cred_inputs = [
+            phrase.upper() for phrase in sorted(matched_categories.get("CREDENTIAL_HARVEST", set()))
+        ][:3]
+
+        # ---------------------------------------------------------------------
+        # 4. Telemetry-Grounded 4-Stage Storyboard (synced with phone-frame.tsx)
+        # ---------------------------------------------------------------------
+        if is_threat:
+            s1_body = (
+                f'Extracted lure copy: "{ev_masq[0]}"'
+                if ev_masq
+                else f"Disguises as '{app_name}' ({pkg}) via launcher activity {main_act} to establish initial user trust."
+            )
+            s2_body = (
+                f'Extracted coercive prompt: "{ev_urg[0]}"'
+                if ev_urg
+                else f"{app_name} requests elevated capabilities ({trap_detail}) to gain persistent control."
+            )
+            s3_body = (
+                f'Extracted harvest lure: "{ev_cred[0]}"'
+                if ev_cred
+                else "No static credential-entry form strings were found in resources.arsc (may rely on permissions or WebView)."
+            )
+            s4_body = (
+                f"Prepared to dispatch collected telemetry from {pkg} to external endpoint(s) discovered in binary."
+                if extracted_urls
+                else f"No hardcoded external exfiltration URLs extracted from {pkg} strings; relies on declared capabilities ({trap_detail})."
+            )
 
             storyboard = [
                 {
                     "id": 1,
                     "step": 1,
                     "title": "Authority Impersonation",
-                    "subtitle": f"{app_name} Launcher Masquerade",
-                    "description": f"Executable disguises as '{app_name}' to establish initial victim trust.",
+                    "subtitle": "Extracted Update/Brand Lure" if ev_masq else f"{app_name} Launcher Identity",
+                    "description": f"Attacker presents '{app_name}' ({main_act}) to lower victim suspicion before requesting privileges.",
                     "device": {
                         "screen_type": "SPLASH",
-                        "header": f"{app_name} Service",
-                        "sub": f"Welcome to {app_name}",
-                        "body": f"Loading runtime modules for {pkg}. Requesting service synchronization...",
+                        "lure_tag": "EXTRACTED_LURE" if ev_masq else "IDENTITY_MASQUERADE",
+                        "header": app_name,
+                        "sub": f"pkg: {pkg}",
+                        "body": s1_body,
+                        "indicators": ev_masq,
                         "button": "Continue",
                         "icon": "shield",
-                        "inputs": [f"PACKAGE: {pkg[:26]}", f"ACTIVITY: {main_act[:24]}"],
                     },
                 },
                 {
                     "id": 2,
                     "step": 2,
-                    "title": "Urgency Engineering",
-                    "subtitle": "Privilege Access Trap",
-                    "description": f"Coercive prompt detected: {trap_detail}.",
+                    "title": "Urgency & Privilege Trap",
+                    "subtitle": trap_detail[:36],
+                    "description": f"Coercive mechanism identified: {trap_detail}.",
                     "device": {
                         "screen_type": "ALERT_MODAL",
-                        "header": "Action Required",
-                        "sub": "Execution Warning",
-                        "body": f"{app_name} requires elevated runtime permissions ({trap_detail}) to proceed.",
+                        "lure_tag": "EXTRACTED_LURE" if ev_urg else "CAPABILITY_TRAP",
+                        "header": "Action Required" if (ev_urg or capabilities) else "Permission Request",
+                        "sub": "Privilege Coercion",
+                        "body": s2_body,
+                        "indicators": ev_urg,
                         "button": "Grant Permissions",
-                        "extra_info": "Immediate Action Required",
+                        "extra_info": trap_detail,
                         "icon": "alert",
                     },
                 },
@@ -294,15 +377,21 @@ class ComprehensiveSocialEngineeringAnalyzer:
                     "id": 3,
                     "step": 3,
                     "title": "Credential Harvest Screen",
-                    "subtitle": "Form Extraction Hook",
-                    "description": "Harvesting credentials and hardware identifiers.",
+                    "subtitle": f"{len(real_cred_inputs)} Lure Field(s) Extracted" if real_cred_inputs else "No Static Form Strings",
+                    "description": (
+                        f"spaCy matched credential-harvesting lures: {', '.join(real_cred_inputs)}."
+                        if real_cred_inputs
+                        else "No static PIN/OTP/Card form strings found in APK resources."
+                    ),
                     "device": {
                         "screen_type": "FORM",
-                        "header": "Identity Verification",
-                        "sub": "Account Authentication",
-                        "body": "Confirm device credentials to synchronize local configuration.",
-                        "button": "Submit Credentials",
-                        "inputs": ["DEVICE ANDROID ID", "USER ACCESS PIN"],
+                        "lure_tag": "EXTRACTED_HARVEST" if real_cred_inputs else "NOT_OBSERVED",
+                        "header": "Credential Verification" if real_cred_inputs else "No Form Lure Detected",
+                        "sub": "Extracted APK Fields" if real_cred_inputs else "Static Resource Audit",
+                        "body": s3_body,
+                        "inputs": real_cred_inputs,
+                        "indicators": ev_cred,
+                        "button": "Submit" if real_cred_inputs else "",
                         "icon": "smartphone",
                     },
                 },
@@ -310,35 +399,41 @@ class ComprehensiveSocialEngineeringAnalyzer:
                     "id": 4,
                     "step": 4,
                     "title": "Covert Data Exfiltration",
-                    "subtitle": "C2 Dispatch Preparation",
-                    "description": "Encoding captured device buffers for remote transmission.",
+                    "subtitle": f"{len(extracted_urls)} URL(s) in Binary" if extracted_urls else "Background Capability",
+                    "description": (
+                        f"Binary contains {len(extracted_urls)} external URL(s) for potential data dispatch."
+                        if extracted_urls
+                        else "No external C2 URLs extracted from static strings."
+                    ),
                     "device": {
                         "screen_type": "OTP",
-                        "header": "Telemetry Dispatch",
-                        "body": f"Packaging captured artifacts from {pkg} for transmission to remote command listener.",
+                        "lure_tag": "ENDPOINT_EXTRACTED" if extracted_urls else "TELEMETRY_ONLY",
+                        "header": "Exfiltration Channel" if extracted_urls else "Background Execution",
+                        "body": s4_body,
+                        "urls": extracted_urls[:2],
+                        "indicators": [c.replace("_", " ") for c in capabilities[:2]],
                         "button": "Complete",
-                        "extra_info": "Encrypted socket stream awaiting network window",
+                        "extra_info": extracted_urls[0] if extracted_urls else "No hardcoded C2 URL observed",
                         "icon": "lock",
                     },
                 },
             ]
         else:
-            # Benign application lifecycle (e.g., Candle11, calculators, clean utilities)
             storyboard = [
                 {
                     "id": 1,
                     "step": 1,
                     "title": "Application Launch",
                     "subtitle": f"{app_name} Main Splash",
-                    "description": f"Standard user launch initialization for '{app_name}'.",
+                    "description": f"Standard launch initialization for '{app_name}' with zero deceptive lures detected.",
                     "device": {
                         "screen_type": "SPLASH",
+                        "lure_tag": "CLEAN_PROFILE",
                         "header": app_name,
-                        "sub": f"Welcome to {app_name}",
-                        "body": f"Starting {app_name}. Loading user settings and local database...",
+                        "sub": f"pkg: {pkg}",
+                        "body": f"Starting {app_name}. No scareware or impersonation strings found in APK resources.",
                         "button": "Open Application",
                         "icon": "sparkles",
-                        "inputs": [f"ID: {pkg[:26]}"],
                     },
                 },
                 {
@@ -349,9 +444,10 @@ class ComprehensiveSocialEngineeringAnalyzer:
                     "description": f"Loads {main_act} without coercive security alerts.",
                     "device": {
                         "screen_type": "ALERT_MODAL",
+                        "lure_tag": "CLEAN_PROFILE",
                         "header": f"{app_name} Ready",
                         "sub": "Operational State",
-                        "body": "Application running in safe sandbox environment. No elevated access requested.",
+                        "body": "No privilege coercion or accessibility/admin traps detected.",
                         "button": "Continue",
                         "extra_info": "Status: Verified Normal",
                         "icon": "shield",
@@ -361,15 +457,16 @@ class ComprehensiveSocialEngineeringAnalyzer:
                     "id": 3,
                     "step": 3,
                     "title": "Local Storage & User State",
-                    "subtitle": "Internal App Storage",
-                    "description": "Stores preferences locally in SQLite / SharedPreferences.",
+                    "subtitle": "No Credential Harvest",
+                    "description": "No phishing or credential-harvesting strings found in APK.",
                     "device": {
                         "screen_type": "FORM",
+                        "lure_tag": "CLEAN_PROFILE",
                         "header": "Application Settings",
                         "sub": "User Preferences",
-                        "body": "Manage local graphics and offline application settings.",
-                        "button": "Save Changes",
-                        "inputs": ["INTERFACE THEME", "LOCAL NOTIFICATIONS"],
+                        "body": "No sensitive banking/OTP input lures detected in resources.arsc.",
+                        "inputs": [],
+                        "button": "",
                         "icon": "file-text",
                     },
                 },
@@ -378,13 +475,14 @@ class ComprehensiveSocialEngineeringAnalyzer:
                     "step": 4,
                     "title": "Network Synchronization",
                     "subtitle": "Routine Endpoint Sync",
-                    "description": "Routine connection to content delivery networks or analytics.",
+                    "description": "No suspicious exfiltration endpoints extracted from binary.",
                     "device": {
                         "screen_type": "OTP",
+                        "lure_tag": "CLEAN_PROFILE",
                         "header": "Connected",
-                        "body": "Application state synchronized with local storage.",
+                        "body": "No covert exfiltration channels detected in static strings.",
                         "button": "Done",
-                        "extra_info": "Standard HTTPS connection",
+                        "extra_info": "Standard application profile",
                         "icon": "lock",
                     },
                 },
@@ -393,8 +491,11 @@ class ComprehensiveSocialEngineeringAnalyzer:
         return {
             "social_engineering_score": final_score,
             "social_score": final_score,
+            "archetype": archetype,
             "detected_capabilities": capabilities,
             "detected_lures": {k: list(v) for k, v in matched_categories.items()},
+            "matched_keywords": sorted({p for phrases in matched_categories.values() for p in phrases}),
+            "phishing_urls": extracted_urls,
             "storyboard": storyboard,
             "screenplay": storyboard,
             "app_name": app_name,
@@ -408,7 +509,6 @@ class ComprehensiveSocialEngineeringAnalyzer:
         }
 
 
-# Global singleton instance
 _ANALYZER = None
 
 

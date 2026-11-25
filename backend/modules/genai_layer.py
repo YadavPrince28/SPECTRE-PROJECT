@@ -4,12 +4,13 @@ import ipaddress
 import json
 import logging
 import os
+import random
 import re
+import time
 import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-import time
 
 from pydantic import BaseModel
 
@@ -32,6 +33,9 @@ except ImportError:
     pass
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip().strip('"').strip("'")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip().strip('"').strip("'")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip().strip('"').strip("'")
+M5_PROVIDER_PREF = os.environ.get("SPECTRE_M5_PROVIDER", "auto").strip().lower()
 
 _GENAI_CLIENT = None
 if GEMINI_API_KEY:
@@ -40,10 +44,10 @@ if GEMINI_API_KEY:
 
         _GENAI_CLIENT = genai.Client(
             api_key=GEMINI_API_KEY,
-            http_options={"timeout": 35000},
+            http_options={"timeout": 25000},
         )
     except Exception as exc:
-        print(f"[M5 ERROR] Failed to initialize Google GenAI client: {exc}", flush=True)
+        print(f"[M5 WARN] Failed to initialize Google GenAI client: {exc}", flush=True)
         logger.warning(f"[M5] Failed to initialize Google GenAI client: {exc}")
         _GENAI_CLIENT = None
 
@@ -85,7 +89,7 @@ KILL_CHAIN_PHASES: list[tuple[int, str]] = [
 
 
 # -----------------------------------------------------------------------------
-# Simplified Pydantic Schema (Compatible with Gemini Structured Outputs)
+# Pydantic Schema for Structured Forensic Synthesis
 # -----------------------------------------------------------------------------
 class BriefSection(BaseModel):
     executive_summary: str
@@ -127,25 +131,121 @@ class ForensicReportSchema(BaseModel):
     rbi_compliance: ComplianceSection
 
 
-def _clean_json(raw_text: str) -> str:
-    text = raw_text.strip()
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if match:
-        return match.group(0).strip()
+def _sanitize_url(raw_url: str) -> str:
+    s = (raw_url or "").strip()
+    md_match = re.search(r"\((https?://[^\s)]+)\)", s)
+    if md_match:
+        s = md_match.group(1)
+    return s.strip("[]()<>\"' ")
+
+
+def _extract_first_json_object(raw_text: str) -> str:
+    """Extracts the first complete balanced JSON object, ignoring trailing text or fences."""
+    text = (raw_text or "").strip()
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     for prefix in ("```json", "```"):
         if text.startswith(prefix):
-            text = text[len(prefix) :]
+            text = text[len(prefix) :].strip()
     if text.endswith("```"):
-        text = text[:-3]
-    return text.strip()
+        text = text[:-3].strip()
+
+    start = text.find("{")
+    if start == -1:
+        return text
+
+    depth = 0
+    in_string = False
+    escape = False
+    for idx in range(start, len(text)):
+        ch = text[idx]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\" and in_string:
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if not in_string:
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[start : idx + 1]
+
+    return text[start:]
+
+
+def _clean_json(raw_text: str) -> str:
+    return _extract_first_json_object(raw_text)
+
+
+def _is_not_found_error(err_lower: str) -> bool:
+    return (
+        "404" in err_lower
+        or "not_found" in err_lower
+        or "no longer available" in err_lower
+        or "model_not_found" in err_lower
+        or "does not exist" in err_lower
+    )
+
+
+def _is_transient_error(err_lower: str) -> bool:
+    return any(
+        tok in err_lower
+        for tok in (
+            "503",
+            "429",
+            "unavailable",
+            "resource_exhausted",
+            "overloaded",
+            "rate limit",
+            "timeout",
+            "timed out",
+            "connection",
+        )
+    )
+
+
+def _get_groq_models() -> list[str]:
+    env_models = os.environ.get("SPECTRE_GROQ_MODELS", "").strip()
+    if env_models:
+        parsed = [m.strip() for m in env_models.split(",") if m.strip()]
+        if parsed:
+            return parsed
+    single = os.environ.get("GROQ_MODEL", "").strip()
+    defaults = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    if single and single not in defaults:
+        return [single, *defaults]
+    return defaults
+
+
+def _get_gemini_models() -> list[str]:
+    env_models = os.environ.get("SPECTRE_GEMINI_MODELS", "").strip()
+    if env_models:
+        parsed = [m.strip() for m in env_models.split(",") if m.strip()]
+        if parsed:
+            return parsed
+    return ["gemini-3.5-flash-lite"]
+
+
+def _get_openrouter_models() -> list[str]:
+    env_models = os.environ.get("SPECTRE_OPENROUTER_MODELS", "").strip()
+    if env_models:
+        parsed = [m.strip() for m in env_models.split(",") if m.strip()]
+        if parsed:
+            return parsed
+    single = os.environ.get("OPENROUTER_MODEL", "openrouter/free").strip()
+    return [single or "openrouter/free"]
 
 
 def _is_public_routable_host(host: str) -> bool:
-    """Rejects private/RFC1918/loopback IPs (e.g., 10.0.0.172) and benign ad/infra domains."""
+    """Rejects private/RFC1918/loopback IPs and benign ad/infra domains."""
     h = str(host).strip().lower()
     if not h or any(b in h for b in BENIGN_AD_DOMAINS):
         return False
-    # Strip scheme/path/port if a full URL slipped in
     if "://" in h:
         h = h.split("://", 1)[1]
     h = h.split("/", 1)[0]
@@ -283,15 +383,35 @@ def _extract_telemetry_bundle(pipeline_results: dict[str, Any]) -> dict[str, Any
     }
 
 
+def _ensure_multiline_smali(snip: dict[str, Any]) -> dict[str, Any]:
+    out = dict(snip or {})
+    code_str = str(out.get("smali_code") or "").strip()
+    lines = [ln for ln in code_str.splitlines() if ln.strip()]
+    if len(lines) < 4:
+        method_sig = str(out.get("method_name") or "execute(Landroid/content/Context;)V")
+        if "(" not in method_sig:
+            method_sig = f"{method_sig}()V"
+        body_line = code_str or "    nop"
+        if not body_line.startswith("    "):
+            body_line = f"    {body_line}"
+        out["smali_code"] = "\n".join([
+            f".method public {method_sig}",
+            "    .locals 2",
+            body_line,
+            "    return-void",
+            ".end method",
+        ])
+    return out
+
+
 def _build_snippets_from_modules(
     bundle: dict[str, Any],
     is_official_bank: bool,
 ) -> list[dict[str, str]]:
-    """Builds real Smali/trace snippets from M1 suspicious_api_chains and M3 runtime deltas."""
+    """Builds telemetry-grounded Smali/trace snippets from M1 chains and M3 runtime deltas."""
     snippets: list[dict[str, str]] = []
     pkg_name = bundle["pkg_name"]
 
-    # 1. Real Dalvik/Smali call-sequence blocks from M1 suspicious_api_chains
     for chain in bundle["suspicious_api_chains"][:3]:
         cls_name = str(chain.get("defining_class") or "UnknownClass").replace(".", "/")
         method_name = str(chain.get("method") or "execute()")
@@ -327,7 +447,6 @@ def _build_snippets_from_modules(
             ),
         })
 
-    # 2. M3 runtime capability delta & exfiltration trace
     delta_rows = bundle["behavior_delta"]
     exfil_events = bundle["exfil_events"]
     if delta_rows or exfil_events:
@@ -357,7 +476,6 @@ def _build_snippets_from_modules(
             ),
         })
 
-    # 3. Fallback capability block if neither M1 chains nor M3 traces were populated
     if not snippets:
         if is_official_bank:
             snippets.append({
@@ -548,7 +666,7 @@ def _generate_grounded_fallback(
             f"Publicly routable untrusted endpoints identified: {c2_label}.",
         ]
 
-    snippets = _build_snippets_from_modules(bundle, is_official_bank)
+    snippets = [_ensure_multiline_smali(s) for s in _build_snippets_from_modules(bundle, is_official_bank)]
     primary_code = snippets[0]
 
     return {
@@ -587,6 +705,166 @@ def _generate_grounded_fallback(
     }
 
 
+def _normalize_llm_payload(raw_dict: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+    d = dict(raw_dict or {})
+    if not isinstance(d.get("rbi_compliance"), dict):
+        pkg_suffix = bundle["pkg_name"].split(".")[-1].upper()[:6] or "APK"
+        d["rbi_compliance"] = {
+            "incident_ref": f"RBI/CSITE/{datetime.now().strftime('%Y%m%d')}/{pkg_suffix}",
+            "circular_section": "RBI Master Circular Section 7.4",
+            "mandates": [
+                "Document verified forensic indicators and containment timeline under RBI Master Circular Section 7.4.",
+                "Block confirmed external malicious C2 infrastructure at network perimeter controls.",
+                "Enforce device attestation and prohibit sideloaded binaries on retail banking devices.",
+            ],
+        }
+    return d
+
+
+def _invoke_openai_compat_json(
+    base_url: str,
+    api_key: str,
+    models: list[str],
+    prompt: str,
+    bundle: dict[str, Any],
+    provider_label: str,
+    extra_headers: dict[str, str] | None = None,
+) -> tuple[dict[str, Any] | None, str, Exception | None]:
+    """Calls an OpenAI-compatible chat completions endpoint (Groq or OpenRouter)."""
+    if not api_key:
+        return None, "", None
+
+    try:
+        import requests
+    except ImportError as exc:
+        return None, "", exc
+
+    schema_hint = json.dumps(ForensicReportSchema.model_json_schema())
+    system_prompt = (
+        "You are a Principal Mobile Threat Intelligence Analyst writing a forensic briefing "
+        "for a Tier-1 Banking SOC under RBI Master Circular Section 7.4. "
+        "Return ONLY a single valid JSON object matching this JSON Schema without markdown fences or extra text:\n"
+        f"{schema_hint}"
+    )
+
+    endpoint_url = _sanitize_url(f"{_sanitize_url(base_url).rstrip('/')}/chat/completions")
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    if extra_headers:
+        headers.update(extra_headers)
+
+    last_err: Exception | None = None
+    for model_name in models:
+        clean_model = str(model_name or "").strip()
+        if not clean_model:
+            continue
+        for attempt in range(1, 3):
+            try:
+                print(f"[M5] Invoking {provider_label} {clean_model} (attempt {attempt}/2)...", flush=True)
+                resp = requests.post(
+                    endpoint_url,
+                    headers=headers,
+                    json={
+                        "model": clean_model,
+                        "temperature": 0.2,
+                        "response_format": {"type": "json_object"},
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": prompt},
+                        ],
+                    },
+                    timeout=30,
+                )
+                if resp.status_code >= 400:
+                    raise RuntimeError(f"HTTP {resp.status_code}: {resp.text.strip()[:220]}")
+
+                payload = resp.json()
+                raw_content = (
+                    payload.get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                )
+                if not raw_content:
+                    raise RuntimeError(f"Empty content returned by {provider_label}")
+
+                cleaned_str = _extract_first_json_object(raw_content)
+                parsed_raw = json.loads(cleaned_str)
+                normalized = _normalize_llm_payload(parsed_raw, bundle)
+                parsed_obj = ForensicReportSchema.model_validate(normalized)
+                return parsed_obj.model_dump(), f"{provider_label} ({clean_model}, json_object)", None
+            except Exception as exc:
+                last_err = exc
+                err_lower = str(exc).lower()
+                print(
+                    f"[M5 WARN] {provider_label} {clean_model} attempt {attempt} failed: {type(exc).__name__}: {str(exc)[:160]}",
+                    flush=True,
+                )
+                if _is_not_found_error(err_lower):
+                    break
+                if _is_transient_error(err_lower) and attempt < 2:
+                    time.sleep(1.0 + random.uniform(0.15, 0.5))
+                    continue
+                break
+
+    return None, "", last_err
+
+
+def _invoke_gemini_json(
+    prompt: str,
+    bundle: dict[str, Any],
+) -> tuple[dict[str, Any] | None, str, Exception | None]:
+    """Calls Gemini structured output API with fast 404 skip and jittered backoff on 503/429."""
+    if not _GENAI_CLIENT or not GEMINI_API_KEY:
+        return None, "", None
+
+    try:
+        from google.genai import types
+    except ImportError as exc:
+        return None, "", exc
+
+    last_err: Exception | None = None
+    for model_name in _get_gemini_models():
+        for attempt in range(1, 3):
+            try:
+                print(f"[M5] Invoking Gemini {model_name} (attempt {attempt}/2)...", flush=True)
+                response = _GENAI_CLIENT.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=ForensicReportSchema,
+                        temperature=0.2,
+                    ),
+                )
+                parsed = getattr(response, "parsed", None)
+                if parsed is not None and hasattr(parsed, "model_dump"):
+                    normalized = _normalize_llm_payload(parsed.model_dump(), bundle)
+                    return ForensicReportSchema.model_validate(normalized).model_dump(), f"google_genai ({model_name}, structured)", None
+                if response and response.text:
+                    cleaned_str = _extract_first_json_object(response.text)
+                    parsed_raw = json.loads(cleaned_str)
+                    normalized = _normalize_llm_payload(parsed_raw, bundle)
+                    return ForensicReportSchema.model_validate(normalized).model_dump(), f"google_genai ({model_name}, structured)", None
+                raise RuntimeError("Empty response from Gemini")
+            except Exception as exc:
+                last_err = exc
+                err_lower = str(exc).lower()
+                print(
+                    f"[M5 WARN] Gemini {model_name} attempt {attempt} failed: {type(exc).__name__}: {str(exc)[:160]}",
+                    flush=True,
+                )
+                if _is_not_found_error(err_lower):
+                    break
+                if _is_transient_error(err_lower) and attempt < 2:
+                    time.sleep(1.2 + random.uniform(0.2, 0.7))
+                    continue
+                break
+
+    return None, "", last_err
+
+
 def analyze_genai(pipeline_results: dict[str, Any]) -> dict[str, Any]:
     bundle = _extract_telemetry_bundle(pipeline_results)
     authenticity = bundle["authenticity"]
@@ -604,9 +882,17 @@ def analyze_genai(pipeline_results: dict[str, Any]) -> dict[str, Any]:
         and len(bundle["genuine_c2"]) == 0
     )
 
-    if not _GENAI_CLIENT or not GEMINI_API_KEY:
-        print("[M5 WARN] GEMINI_API_KEY missing or client uninitialized; using grounded fallback.", flush=True)
-        return _generate_grounded_fallback(pipeline_results, bundle, reason="no_api_key")
+    groq_key = os.environ.get("GROQ_API_KEY", "").strip().strip('"').strip("'") or GROQ_API_KEY
+    openrouter_key = (
+        os.environ.get("OPENROUTER_API_KEY", "").strip().strip('"').strip("'") or OPENROUTER_API_KEY
+    )
+    provider_pref = os.environ.get("SPECTRE_M5_PROVIDER", "").strip().lower() or M5_PROVIDER_PREF
+
+    has_any_llm = bool(openrouter_key or groq_key or (_GENAI_CLIENT and GEMINI_API_KEY))
+    if provider_pref == "fallback" or not has_any_llm:
+        reason = "provider_pref_fallback" if provider_pref == "fallback" else "no_llm_api_key"
+        print(f"[M5 INFO] Using deterministic grounded synthesis ({reason}).", flush=True)
+        return _generate_grounded_fallback(pipeline_results, bundle, reason=reason)
 
     telemetry_payload = {
         "package_name": bundle["pkg_name"],
@@ -645,123 +931,123 @@ def analyze_genai(pipeline_results: dict[str, Any]) -> dict[str, Any]:
     }
 
     prompt = f"""
-You are a Principal Mobile Threat Intelligence Analyst writing an executive forensic briefing for a Tier-1 Banking SOC (Mandiant / CERT-In standard) under RBI Master Circular Section 7.4.
+You are a Principal Mobile Threat Intelligence Analyst writing a forensic briefing for a Tier-1 Banking SOC under RBI Master Circular Section 7.4.
 
-Analyze the cross-module telemetry for this APK and synthesize a cohesive, authoritative assessment:
-1. DO NOT just repeat raw numbers like "M1 Static Analysis: 13 permissions, risk score 35/100."
-2. EXPLAIN what the cross-module correlation means (for example: if Behavioral DNA shows high similarity to a known malware family like Glodream while dynamic analysis shows dormancy and 0 exfiltration events, explain that this indicates either anti-sandbox evasion or a legacy trojanized/adware codebase requiring manual reverse engineering).
-3. Write `executive_summary` as a sharp 3-sentence threat assessment covering: (a) classification & lineage, (b) observed capabilities or evasion, and (c) operational risk to retail/banking users.
-4. Write `key_findings` as 4-5 analytical, evidence-backed bullet points linking specific permissions, API chains, behavioral lineage, or runtime gaps to real attack impact.
-5. Set `rbi_compliance.circular_section` to exactly "RBI Master Circular Section 7.4" (do not repeat "Incident Reporting Standard").
-6. Populate all 7 `kill_chain` stages (1 to 7) with `status` set to "Observed", "Inferred", or "Not Observed", citing the exact module and artifact in `evidence_source`.
-7. Never invent C2 domains or treat private RFC1918 IPs (10.x, 192.168.x, 172.16-31.x) as external C2. If `public_untrusted_endpoints` is empty, set `c2_jurisdiction` to "None Observed".
-8. For `code_snippets`, generate 2-3 realistic, telemetry-grounded Smali/trace items based on the actual permissions, API chains, or runtime deltas present in the telemetry.
+Follow these strict accuracy rules using ONLY the telemetry JSON below:
+1. Never append or invent unrelated brand/company names on obfuscated package or class names, and never claim millions of users unless explicitly supported by telemetry. Always use the exact `package_name` from telemetry and state uncertainty plainly when sandbox telemetry is dormant or C2 is unobserved.
+2. Write `executive_summary` in 2-3 concise, factual sentences: (a) behavioral family match & M1/M2/M3/M4 signals, (b) observed vs dormant/unobserved runtime behavior, and (c) concrete risk based only on observed capabilities.
+3. Write 4-5 `key_findings` where every bullet explicitly cites its source module (`M1 Static`, `M2 Behavioral`, `M3 Dynamic`, or `M4 Social`) and exact values from telemetry.
+4. Set `rbi_compliance.circular_section` to "RBI Master Circular Section 7.4" and include `incident_ref` and `mandates`.
+5. Populate all 7 `kill_chain` stages (1 to 7) with `status` in {{"Observed", "Inferred", "Not Observed"}} and exact `evidence_source`.
+6. For `code_snippets`, provide 2-3 entries grounded in actual static permissions/chains or runtime deltas from telemetry, and make each `smali_code` a complete 5-10 line block including `.method`, `invoke-*` or `const-string` instructions, and `.end method`.
 
 Telemetry:
 {json.dumps(telemetry_payload, indent=2, default=str)}
 """
 
-    try:
-        from google.genai import types
+    data: dict[str, Any] | None = None
+    mode_label = ""
+    last_err: Exception | None = None
 
-        model_candidates = [
-            "gemini-3.5-flash-lite",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite",
-        ]
+    if provider_pref in ("gemini", "groq", "openrouter"):
+        order = [provider_pref] + [p for p in ("gemini", "groq", "openrouter") if p != provider_pref]
+    else:
+        order = ["gemini", "groq", "openrouter"]
 
-        data = None
-        used_model = ""
-        last_error = None
+    or_headers = {
+        "HTTP-Referer": os.environ.get("OPENROUTER_SITE_URL", "http://localhost:3000").strip(),
+        "X-Title": os.environ.get("OPENROUTER_APP_TITLE", "SPECTRE Threat Engine").strip(),
+    }
 
-        for model_name in model_candidates:
-            for attempt in range(1, 3):  # 2 attempts per model
-                try:
-                    print(f"[M5] Invoking {model_name} (attempt {attempt}/2)...", flush=True)
-                    response = _GENAI_CLIENT.models.generate_content(
-                        model=model_name,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            response_schema=ForensicReportSchema,
-                            temperature=0.2,
-                        ),
-                    )
-                    parsed = getattr(response, "parsed", None)
-                    if parsed is not None and hasattr(parsed, "model_dump"):
-                        data = parsed.model_dump()
-                    elif response and response.text:
-                        data = ForensicReportSchema.model_validate_json(
-                            _clean_json(response.text)
-                        ).model_dump()
-
-                    if data:
-                        used_model = model_name
-                        break
-                except Exception as exc:
-                    last_error = exc
-                    err_str = str(exc)
-                    print(
-                        f"[M5 WARN] {model_name} attempt {attempt} failed: {type(exc).__name__}: {err_str[:160]}",
-                        flush=True,
-                    )
-                    # Retry on transient 503/429 spikes before switching models
-                    if ("503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str) and attempt < 2:
-                        time.sleep(2.5)
-                        continue
-                    break
+    for backend_name in order:
+        if backend_name == "gemini" and _GENAI_CLIENT and GEMINI_API_KEY:
+            data, mode_label, err = _invoke_gemini_json(prompt, bundle)
+            if err is not None:
+                last_err = err
+            if data:
+                break
+        elif backend_name == "groq" and groq_key:
+            data, mode_label, err = _invoke_openai_compat_json(
+                base_url="[https://api.groq.com/openai/v1](https://api.groq.com/openai/v1)",
+                api_key=groq_key,
+                models=_get_groq_models(),
+                prompt=prompt,
+                bundle=bundle,
+                provider_label="groq",
+            )
+            if err is not None:
+                last_err = err
+            if data:
+                break
+        elif backend_name == "openrouter" and openrouter_key:
+            data, mode_label, err = _invoke_openai_compat_json(
+                base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)",
+                api_key=openrouter_key,
+                models=_get_openrouter_models(),
+                prompt=prompt,
+                bundle=bundle,
+                provider_label="openrouter",
+                extra_headers=or_headers,
+            )
+            if err is not None:
+                last_err = err
             if data:
                 break
 
-        if not data:
-            print(f"[M5 ERROR] All Gemini models failed. Last error: {last_error}", flush=True)
-            logger.warning(f"[M5] Gemini structured synthesis failed: {last_error}")
-            return _generate_grounded_fallback(
-                pipeline_results,
-                bundle,
-                reason=type(last_error).__name__ if last_error else "empty_response",
-            )
+    if not data:
+        reason = type(last_err).__name__ if last_err else "all_llm_providers_failed"
+        print(f"[M5 WARN] All LLM providers failed ({last_err}); using grounded fallback.", flush=True)
+        logger.warning(f"[M5] LLM synthesis failed: {last_err}")
+        return _generate_grounded_fallback(pipeline_results, bundle, reason=reason)
 
-        raw_score = float(data.get("genai_score", 25.0))
-        if is_official_bank:
-            raw_score = min(15.0, raw_score)
-            threat_level = "LOW"
-        elif is_benign_candidate:
-            raw_score = min(25.0, raw_score)
-            threat_level = "LOW"
-        else:
-            threat_level = str(data.get("threat_level", "MEDIUM")).upper()
+    raw_score = float(data.get("genai_score", 25.0))
+    if 0.0 < raw_score <= 1.0 and not is_official_bank and not is_benign_candidate:
+        raw_score = round(raw_score * 100.0, 1)
 
-        clean_score = round(min(100.0, max(0.0, raw_score)), 1)
+    # Align M5 with strong multi-module consensus on non-benign samples
+    consensus_signal = (
+        (bundle["m1_perm"] * 0.35)
+        + (bundle["m2_score"] * 0.40)
+        + (bundle["m4_score"] * 0.25)
+    )
+    if not is_official_bank and not is_benign_candidate and consensus_signal >= 65.0:
+        raw_score = max(raw_score, round(consensus_signal * 0.85, 1))
 
-        module_snippets = _build_snippets_from_modules(bundle, is_official_bank)
-        gemini_snippets = data.get("code_snippets") or []
-        final_snippets = gemini_snippets if gemini_snippets else module_snippets
-        primary_code = final_snippets[0] if final_snippets else module_snippets[0]
+    if is_official_bank:
+        raw_score = min(15.0, raw_score)
+        threat_level = "LOW"
+    elif is_benign_candidate:
+        raw_score = min(25.0, raw_score)
+        threat_level = "LOW"
+    else:
+        threat_level = str(data.get("threat_level", "MEDIUM")).upper()
 
-        kill_chain = data.get("kill_chain") or _build_grounded_kill_chain(bundle, is_official_bank)
+    clean_score = round(min(100.0, max(0.0, raw_score)), 1)
 
-        return {
-            "module": "genai_synthesis",
-            "status": "complete",
-            "genai_score": clean_score,
-            "severity_score": clean_score,
-            "threat_level": threat_level,
-            "brief": data.get("brief", {}),
-            "code_interpreter": {
-                "file_name": primary_code.get("file_name", "Analysis.smali"),
-                "method_name": primary_code.get("method_name", "execute()"),
-                "smali_code": primary_code.get("smali_code", ""),
-                "plain_english_interpretation": primary_code.get("plain_english_interpretation", ""),
-                "bank_countermeasure": primary_code.get("bank_countermeasure", ""),
-            },
-            "code_snippets": final_snippets,
-            "kill_chain": kill_chain,
-            "rbi_compliance": data.get("rbi_compliance", {}),
-            "mode": f"google_genai ({used_model}, structured)",
-            "completed_at": datetime.now(timezone.utc).isoformat(),
+    module_snippets = [_ensure_multiline_smali(s) for s in _build_snippets_from_modules(bundle, is_official_bank)]
+    llm_snippets = [_ensure_multiline_smali(s) for s in (data.get("code_snippets") or []) if isinstance(s, dict)]
+    final_snippets = llm_snippets if llm_snippets else module_snippets
+    primary_code = final_snippets[0] if final_snippets else module_snippets[0]
+
+    kill_chain = data.get("kill_chain") or _build_grounded_kill_chain(bundle, is_official_bank)
+
+    return {
+        "module": "genai_synthesis",
+        "status": "complete",
+        "genai_score": clean_score,
+        "severity_score": clean_score,
+        "threat_level": threat_level,
+        "brief": data.get("brief", {}),
+        "code_interpreter": {
+            "file_name": primary_code.get("file_name", "Analysis.smali"),
+            "method_name": primary_code.get("method_name", "execute()"),
+            "smali_code": primary_code.get("smali_code", ""),
+            "plain_english_interpretation": primary_code.get("plain_english_interpretation", ""),
+            "bank_countermeasure": primary_code.get("bank_countermeasure", ""),
+        },
+        "code_snippets": final_snippets,
+        "kill_chain": kill_chain,
+        "rbi_compliance": data.get("rbi_compliance", {}),
+        "mode": mode_label,
+        "completed_at": datetime.now(timezone.utc).isoformat(),
     }
-    except Exception as exc:
-        print(f"[M5 ERROR] Live Gemini call failed: {type(exc).__name__}: {exc}", flush=True)
-        logger.warning(f"[M5] Gemini structured synthesis failed: {exc}")
-        return _generate_grounded_fallback(pipeline_results, bundle, reason=type(exc).__name__)
